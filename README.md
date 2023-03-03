@@ -8,6 +8,7 @@ My cheat sheets for variety of topics including
 * Machines (3 parts)
 * Power Systems
 * Numerical Method and Special Functions
+* Digital Communication
 
 Hoping to continue creating cheat shhets for many topics either in computer science or in electronics and communication engineering
 
