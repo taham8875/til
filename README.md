@@ -9,6 +9,8 @@ My cheat sheets for variety of topics including
 * Power Systems
 * Numerical Method and Special Functions
 * Digital Communication
+* Network Engineering
+* Biomedical Engineering
 
 Hoping to continue creating cheat shhets for many topics either in computer science or in electronics and communication engineering
 
