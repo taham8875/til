@@ -265,3 +265,167 @@ For an api to be RESTful, it must follow the REST constraints:
 - stateless like HTTP
 - supports common HTTP verbs (GET, POST, PUT, DELETE, etc.)
 - returns data in either the JSON or XML format
+
+
+
+
+# Chapter 3 - Library Website - traditional django
+
+## Create virtual environment, activate it and install django
+
+
+
+## Create a new django project
+
+A traditional Django website consists of a single project with multiple apps representing discrete functionality
+
+```bash
+$ django-admin startproject django_project .
+```
+
+The period at the end of the command tells Django to create the project in the current directory.
+
+Let's use the command `migrate` to create the database tables for the project:
+
+```bash
+$ python manage.py migrate
+```
+
+start the development server:
+
+```bash
+$ python manage.py runserver
+```
+
+open the browser and go to `http://localhost:8000` to see the default django page
+
+## Create a new app
+
+```bash
+$ python manage.py startapp book
+```
+
+Before we can use the app, we need to tell Django to include it in the project. To do this, we need to add the app to the `INSTALLED_APPS` list in the `django_project/settings.py` file.
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # add the app name here
+    'books.apps.BooksConfig',
+]
+```
+
+## Create a model
+
+create a new `Book` model in the `books/models.py` file:
+
+```python
+from django.db import models
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.CharField(max_length=100)
+    description = models.TextField()
+    isbn = models.CharField(max_length=13)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+```
+
+make migrations and migrate:
+
+```bash
+$ python manage.py makemigrations
+$ python manage.py migrate
+```
+
+## Admin
+
+create a superuser:
+
+```bash
+$ python manage.py createsuperuser
+```
+
+register the `Book` model in the `books/admin.py` file:
+
+```python
+from django.contrib import admin
+from .models import Book
+
+admin.site.register(Book)
+```
+
+start the development server and go to `http://localhost:8000/admin` to see the admin page
+
+## Create a view
+
+the `views.py` file controls how the database model content is displayed. 
+
+create a new `BookListView` view in the `books/views.py` file:
+
+```python
+from django.views.generic import ListView
+from .models import Book
+
+class BookListView(ListView):
+    model = Book
+    template_name = 'books/book_list.html'
+```
+
+## Create a URL
+
+First we configure the `urls.py` file in the `django_project` directory to point to the `books` app. Open the `django_project/urls.py` file and add the following line:
+
+```python
+from django.urls import path, include
+from django.contrib import admin
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('books.urls')),
+]
+```
+
+create a new `urls.py` file in the `books` directory and add the following line:
+
+```python
+from django.urls import path
+from .views import BookListView
+
+urlpatterns = [
+    path('', BookListView.as_view(), name='book_list'),
+]
+```
+
+## Create a template
+
+create a new `book_list.html` template in the `books/templates/books` directory (default template directory):
+
+```html
+    <h1>Book List</h1>
+    <ul>
+        {% for book in object_list %}
+            <li>{{ book.title }}</li>
+            <li>{{ book.author }}</li>
+            <li>{{ book.description }}</li>
+            <li>{{ book.isbn }}</li>
+        {% endfor %}
+    </ul>
+```
+
+Now we can run the development server and go to `http://localhost:8000` to see the book list page.
+
+
+
+
+
+
+
