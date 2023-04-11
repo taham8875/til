@@ -424,7 +424,120 @@ create a new `book_list.html` template in the `books/templates/books` directory 
 Now we can run the development server and go to `http://localhost:8000` to see the book list page.
 
 
+# Chapter 4 - Library API - django REST framework
 
+
+## Install django REST framework
+
+```bash
+$ pip install djangorestframework
+```
+
+We have to notify Django that we want to use the REST framework. To do this, we need to add the `rest_framework` app to the `INSTALLED_APPS` list in the `django_project/settings.py` file.
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # 3rd part 
+    'rest_framework',
+    # local apps
+    'books.apps.BooksConfig',
+]
+```
+
+Many django professionals prefer include the api logic the related apps while putting URLs under an /api/ prefix. For now though, to keep the API logic clear from the traditional Django logic, we will create a dedicated apis app for our project.
+
+```bash
+$ python manage.py startapp apis
+```
+
+add the new app to the `INSTALLED_APPS` list in the `django_project/settings.py` file:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # 3rd part 
+    'rest_framework',
+    # local apps
+    'books.apps.BooksConfig',
+    'apis.apps.ApisConfig',
+]
+```
+
+## URLs
+
+Let's include the `apis` app in the `django_project/urls.py` file:
+
+```python
+from django.urls import path, include
+from django.contrib import admin
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('books.urls')),
+    path('api/', include('apis.urls')),
+]
+```
+
+Then create a new `urls.py` file in the `apis`, this file will import a future
+view called `BookAPIView` and set it to the URL route of `""` so it will appear at `api/`. As always,
+
+we will add a name `book_list_api` to it as well, so we can refer to it later.
+
+```python
+from django.urls import path
+from .views import BookAPIView
+
+urlpatterns = [
+    path('', BookAPIView.as_view(), name='book_list_api'),
+]
+```
+
+## Views
+
+Django rest framework views are similar to Django's generic views. except we thee end result is a JSON response instead of a HTML page.
+
+There are generic django rest framework views for common cases, and we will use the `ListAPIView` view for our `BookAPIView` view.
+
+create a new `BookAPIView` view in the `apis/views.py` file:
+
+```python
+from rest_framework import generics
+from books.models import Book
+from .serializers import BookSerializer
+
+class BookAPIView(generics.ListAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+```
+
+## Serializers
+
+The `serializers.py` file is where we define the data format that we want to return to the client. It translates complex data like querysets and model instances into a JSON format, We will use the `ModelSerializer` class to create a serializer for our `Book` model.
+
+create a new `BookSerializer` serializer in the `apis/serializers.py` file:
+
+```python
+from rest_framework import serializers
+from books.models import Book
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = '__all__'
+```
+
+We are now ready to test our API. Start the development server and go to `http://localhost:8000/api/` to see the JSON response.
 
 
 
