@@ -266,14 +266,9 @@ For an api to be RESTful, it must follow the REST constraints:
 - supports common HTTP verbs (GET, POST, PUT, DELETE, etc.)
 - returns data in either the JSON or XML format
 
-
-
-
 # Chapter 3 - Library Website - traditional django
 
 ## Create virtual environment, activate it and install django
-
-
 
 ## Create a new django project
 
@@ -367,7 +362,7 @@ start the development server and go to `http://localhost:8000/admin` to see the 
 
 ## Create a view
 
-the `views.py` file controls how the database model content is displayed. 
+the `views.py` file controls how the database model content is displayed.
 
 create a new `BookListView` view in the `books/views.py` file:
 
@@ -410,22 +405,20 @@ urlpatterns = [
 create a new `book_list.html` template in the `books/templates/books` directory (default template directory):
 
 ```html
-    <h1>Book List</h1>
-    <ul>
-        {% for book in object_list %}
-            <li>{{ book.title }}</li>
-            <li>{{ book.author }}</li>
-            <li>{{ book.description }}</li>
-            <li>{{ book.isbn }}</li>
-        {% endfor %}
-    </ul>
+<h1>Book List</h1>
+<ul>
+  {% for book in object_list %}
+  <li>{{ book.title }}</li>
+  <li>{{ book.author }}</li>
+  <li>{{ book.description }}</li>
+  <li>{{ book.isbn }}</li>
+  {% endfor %}
+</ul>
 ```
 
 Now we can run the development server and go to `http://localhost:8000` to see the book list page.
 
-
 # Chapter 4 - Library API - django REST framework
-
 
 ## Install django REST framework
 
@@ -443,7 +436,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 3rd part 
+    # 3rd part
     'rest_framework',
     # local apps
     'books.apps.BooksConfig',
@@ -466,7 +459,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 3rd part 
+    # 3rd part
     'rest_framework',
     # local apps
     'books.apps.BooksConfig',
@@ -539,6 +532,243 @@ class BookSerializer(serializers.ModelSerializer):
 
 We are now ready to test our API. Start the development server and go to `http://localhost:8000/api/` to see the JSON response.
 
+# Chapter 5 - Todo API
 
+## Initial Setup
 
+```bash
+$ mkdir todo_api
+$ cd todo_api
+$ python3 -m venv .venv
+$ source .venv/bin/activate
+$ pip install django djangorestframework
+$ django-admin startproject django_project .
+$ python manage.py startapp todos
+$ python manage.py migrate
+```
 
+Add the new app and the `rest_framework` to the `INSTALLED_APPS` list in the `django_project/settings.py` file:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # 3rd part
+    'rest_framework',
+    # local apps
+    'todos.apps.TodosConfig',
+]
+```
+
+For starters, let’s explicitly set permissions to AllowAny for all API views. This will allow unrestricted access, so that we can test our API without having to worry about authentication. We will add the following code to the `django_project/settings.py` file:
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}
+```
+
+## Models
+
+Define the `Todo` model in the `todos/models.py` file:
+
+```python
+from django.db import models
+
+class Todo(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.title
+```
+
+make the migrations and migrate:
+
+```bash
+$ python manage.py makemigrations
+$ python manage.py migrate
+```
+
+## Admin
+
+Register the `Todo` model in the `todos/admin.py` file, as a bonus, we will also add a `list_display` attribute to the `TodoAdmin` class to display the `title` and `content` fields in the admin site:
+
+```python
+from django.contrib import admin
+from .models import Todo
+
+class TodoAdmin(admin.ModelAdmin):
+    list_display = ('title', 'content')
+
+admin.site.register(Todo, TodoAdmin)
+```
+
+Now we can create a superuser and run the development server to see the admin site:
+
+```bash
+$ python manage.py createsuperuser
+$ python manage.py runserver
+```
+
+## Add todos via the terminal
+
+```bash
+$ python manage.py shell
+>>> from todos.models import Todo
+>>> Todo.objects.create(title='Todo 1', content='Todo 1 content')
+>>> Todo.objects.create(title='Todo 2', content='Todo 2 content')
+>>> todo3 = Todo(title='Todo 3', content='Todo 3 content')
+>>> todo3.save()
+```
+
+Query the todos:
+
+```bash
+>>> Todo.objects.all()
+<QuerySet [<Todo: Todo 1>, <Todo: Todo 2>, <Todo: Todo 3>]>
+>>> Todo.objects.first()
+<Todo: Todo 1>
+>>> Todo.objects.last()
+<Todo: Todo 3>
+>>> Todo.objects.filter(title='Todo 1').first()
+<Todo: Todo 1>
+>>> Todo.objects.get(id=1)
+<Todo: Todo 1>
+>>> Todo.objects.get(id=1).content
+'Todo 1 content'
+```
+
+## URLs
+
+Let's include the `todos` app in the `django_project/urls.py` file:
+
+```python
+from django.urls import path, include
+from django.contrib import admin
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('todos.urls')),
+]
+```
+
+Then create a new `urls.py` file in the `todos`, this file will import a future viewsx called `ListView` and `DetailView` set it to the URL route of `""` and `"<int:pk>"` so they will appear at `api/`. As always, we will add a name `todo_list` and `todo_detail` to them as well, so we can refer to them later.
+
+```python
+from django.urls import path
+from .views import ListView
+
+urlpatterns = [
+    path('', ListView.as_view(), name='todo_list'),
+    path('<int:pk>', DetailView.as_view(), name='todo_detail'),
+]
+```
+
+## Serializers
+
+The `serializers.py` file is where we define the data format that we want to return to the client. It translates complex data like querysets and model instances into a JSON format, We will use the `ModelSerializer` class to create a serializer for our `Todo` model.
+
+create a new `TodoSerializer` serializer in the `todos/serializers.py` file:
+
+```python
+from rest_framework import serializers
+from .models import Todo
+
+class TodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Todo
+        fields = '__all__'
+```
+
+## Views
+
+Django rest framework views are similar to Django's generic views. except we thee end result is a JSON response instead of a HTML page.
+
+There are generic django rest framework views for common cases, and we will use the `ListAPIView` view for our `ListView` view and the `RetrieveAPIView` view for our `DetailView` view.
+
+```python
+from rest_framework import generics
+from .models import Todo
+
+class ListView(generics.ListAPIView):
+    queryset = Todo.objects.all()
+    serializer_class = TodoSerializer
+
+class DetailView(generics.RetrieveAPIView):
+    queryset = Todo.objects.all()
+    serializer_class = TodoSerializer
+```
+
+Now we are ready to test our API. Start the development server and go to `http://localhost:8000/api/` to see the JSON response., you can also go to `http://localhost:8000/api/1` to see the JSON response for the todo with id 1.
+
+## CROS
+
+CORS stands for Cross-Origin Resource Sharing. It is a mechanism that allows restricted resources on a web page to be requested from another domain outside the domain from which the first resource was served.
+
+Install the `django-cors-headers` package:
+
+```bash
+$ pip install django-cors-headers
+```
+
+Add the `corsheaders` app to the `INSTALLED_APPS` list in the `django_project/settings.py` file:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # 3rd part
+    'rest_framework',
+    'corsheaders',
+    # local apps
+    'todos.apps.TodosConfig',
+]
+```
+
+Add the `corsheaders.middleware.CorsMiddleware` middleware to the `MIDDLEWARE` list in the `django_project/settings.py` file:
+
+```python
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    # add corsheaders middleware here
+    'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+```
+
+Add the allowed origins to the `CORS_ALLOWED_ORIGINS` list in the `django_project/settings.py` file:
+
+```python
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
+```
+
+## CSRF
+
+CSRF stands for Cross-Site Request Forgery. It is an attack that forces an end user to execute unwanted actions on a web application in which they're currently authenticated. CSRF attacks specifically target state-changing requests, not theft of data, since the attacker has no way to see the response to the forged request.
+
+Add CSRF to the `django_project/settings.py` file:
+
+```python
+CSRF_TRUSTED_ORIGINS = [
+    "localhost:3000",
+]
+```
