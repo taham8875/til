@@ -872,6 +872,7 @@ urlpatterns = [
     path('api/v1/', include('posts.urls')),
 ]
 ```
+
 it is a good practice to include the version number in the url, so if you want to change the API in the future you can create a new version and keep the old one. no breaking changes for old clients uses the old version.
 
 Create a new file called `urls.py` in the `posts` app:
@@ -899,7 +900,6 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 ```
-
 
 ## Views
 
@@ -949,7 +949,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 ```
 
-# CSRF 
+# CSRF
 
 CSRF stands for Cross-Site Request Forgery. It is an attack that forces an end user to execute unwanted actions on a web application in which they're currently authenticated. CSRF attacks specifically target state-changing requests, not theft of data, since the attacker has no way to see the response to the forged request.
 
@@ -1017,9 +1017,9 @@ for _ in range(10):
 
 Now lets read how to run it from django docs: [click here](https://docs.djangoproject.com/en/4.2/howto/custom-management-commands/)
 
-> How to create custom django-admin commands 
-Applications can register their own actions with manage.py. For example, you might want to add a manage.py action for a Django app that you’re distributing. In this document, we will be building a custom closepoll command for the polls application from the tutorial.
-To do this, add a management/commands directory to the application. Django will register a manage.py command for each Python module in that directory whose name doesn’t begin with an underscore. For example:
+> How to create custom django-admin commands
+> Applications can register their own actions with manage.py. For example, you might want to add a manage.py action for a Django app that you’re distributing. In this document, we will be building a custom closepoll command for the polls application from the tutorial.
+> To do this, add a management/commands directory to the application. Django will register a manage.py command for each Python module in that directory whose name doesn’t begin with an underscore. For example:
 
 ```bash
 polls/
@@ -1036,8 +1036,8 @@ polls/
 ```
 
 > In this example, the closepoll command will be made available to any project that includes the polls application in INSTALLED_APPS.
-The _private.py module will not be available as a management command.
-The closepoll.py module has only one requirement – it must define a class Command that extends BaseCommand or one of its subclasses.
+> The \_private.py module will not be available as a management command.
+> The closepoll.py module has only one requirement – it must define a class Command that extends BaseCommand or one of its subclasses.
 
 After reading the docs, we can create a new file called `generateFakeData.py` in the `posts/management/commands` directory:
 
@@ -1104,6 +1104,7 @@ $ python manage.py generateFakeData
 Django REST framework supports generating human-friendly HTML output for each resource when the HTML format is requested. These pages allow for easy browsing of resources, as well as forms for submitting data to the resources using POST, PUT, and DELETE.
 
 Run the development server:
+
 ```bash
 $ python manage.py runserver
 ```
@@ -1124,3 +1125,195 @@ You can also see individual posts, for example, navigate to `http://localhost:80
 
 ![individual](assets/individual.jpg)
 
+```python
+from rest_framework import permissions
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+    # Authenticated users only can see list view
+    if request.user.is_authenticated:
+        return True
+    return False
+
+def has_object_permission(self, request, view, obj):
+    # Read permissions are allowed to any request so we'll always
+    # allow GET, HEAD, or OPTIONS requests
+    if request.method in permissions.SAFE_METHODS:
+        return True
+    # Write permissions are only allowed to the author of a post
+    return obj.author == request.user
+```
+
+# Chapter 7 - Permissions
+
+In this chapter we will learn how to add permissions to our API.
+
+## Project level permissions
+
+There are actually four built-in project-level permissions settings we can use:
+
+- `AllowAny` - any user, authenticated or not, has full access
+- `IsAuthenticated` - only authenticated, registered users have access
+- `IsAdminUser` - only admins/superusers have access
+- `IsAuthenticatedOrReadOnly` - unauthorized users can view any page, but only authenticated users have write, edit, or delete privileges
+
+Implementing any of these four settings requires updating the `DEFAULT_PERMISSION_CLASSES` setting and refreshing our web browser. That’s it!
+
+Let’s switch to IsAuthenticated so only authenticated, or logged in, users can view the API.
+
+Update the `django_project/settings.py` file as follows:
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+```
+
+if you logged ot or visited the API from incognito mode, you will see the following error:
+
+![403](assets/403.jpg)
+
+Now lets create a new user via the python shell: (Note that you can also create a new user via the admin panel)
+
+```bash
+$ python manage.py shell
+```
+
+```python
+>>> from django.contrib.auth.models import User
+>>> newUser = User.objects.create_user('newUser', password='newPassword')
+```
+
+To log in to the browsable API, we need to update the project level url to include the login views:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/', include('posts.urls')),
+    path('api-auth/', include('rest_framework.urls')),
+]
+```
+
+Now we can log in to the browsable API by navigating to `http://localhost:8000/api-auth/login/` and entering the username and password we created in the previous step, you can now see the posts.
+
+![login](assets/login.jpg)
+
+## View-Level Permissions
+
+Permissions can be added at the view-level too for more granular control. Let’s update our PostDetail view so that only admin users can view it. If we do this correctly, a logged out user can’t view the API at all, a logged-in user can view the list page, but only an admin can see the detail page.
+
+Update the `posts/views.py` file as follows:
+
+```python
+from rest_framework import generics, permissions
+from .models import Post
+from .serializers import PostSerializer
+
+class PostListView(generics.ListCreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = (permissions.IsAdminUser,)
+```
+
+That’s all we need. Refresh the browsable API at `http://127.0.0.1:8000/api/v1/` and the Post
+List page is still viewable. However if you navigate to `http://127.0.0.1:8000/api/v1/1/` to see
+the Post Detail page an HTTP 403 Forbidden status code is displayed.
+
+If you logged out and logged in as admin, you will be able to see post detailed view.
+
+This was only for testing, now we can remove `permissions.IsAdminUser` view-level permission.
+
+## Custom Permissions
+
+For our first custom permission we want to restrict access so that only the author of a blog post can edit it or delete it. The admin superuser will have access to do everything but a regular user can only update/delete their own content.
+
+Internally, Django REST Framework relies on a `BasePermission` class from which all other permission classes inherit. All the built-in permissions settings like `AllowAny` or `IsAuthenticated`
+simple extend `BasePermission`, Here is the actual source code which is available on [`Github`](https://github.com/encode/django-rest-framework/blob/38a74b42da10576857d6bf8bd82a73b15d12a7ed/rest_framework/permissions.py#L112):
+
+```python
+class BasePermission(metaclass=BasePermissionMetaclass):
+    """
+    A base class from which all permission classes should inherit.
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return True
+```
+
+For a custom permission class you can override one or both of these methods. `has_permission` works on list views while detail views execute both: first `has_permission` and then, if that passes, `has_object_permission`. It is strongly advised to always set both methods explicitly because each defaults to True, meaning they will allow access implicitly unless set explicitly.
+
+Let’s create a new file called `permissions.py` in the `posts` directory and add the following code:
+
+```python
+from rest_framework import permissions
+
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow authors of an object to edit it.
+    """
+
+    def has_permission(self, request, view):
+        # Authenticated users only can see list view
+        if request.user.is_authenticated:
+            return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        # Note that detail view execute has_permission() first, if passes, then execute has_object_permission(), no need to check if user is authenticated here
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowed to the author of the post.
+        if obj.author == request.user:
+            return True
+```
+
+Now we can update `posts/views.py` to use our new permission class:
+
+```python
+from rest_framework import generics
+from .models import Post
+from .serializers import PostSerializer
+from .permissions import IsAuthorOrReadOnly
+
+class PostListView(generics.ListCreateAPIView):
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+# RetrieveUpdateDestroyAPIView vs RetrieveAPIView
+#   RetrieveUpdateDestroyAPIView: GET, PUT, PATCH, DELETE
+#   RetrieveAPIView: GET
+
+# ListAPIView vs ListCreateAPIView
+#   ListAPIView: GET
+#   ListCreateAPIView: GET, POST
+```
+
+We are now ready to test our new permission class. If you try to access the list view, you will get a 403 Forbidden error because we are not logged in, after logging in, you can see the list view.
+
+If you try to access the detail view of a post you didn’t create, you will notice that you can only read it, but not to edit or delete it.
