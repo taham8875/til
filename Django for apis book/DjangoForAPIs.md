@@ -1035,7 +1035,7 @@ polls/
     views.py
 ```
 
-> In this example, the closepoll command will be made available to any project that includes the polls application in INSTALLED_APPS.
+> In this example, the closepoll command will be made available to any project that includes the polls application in `INSTALLED_APPS`.
 > The \_private.py module will not be available as a management command.
 > The closepoll.py module has only one requirement – it must define a class Command that extends BaseCommand or one of its subclasses.
 
@@ -1317,3 +1317,246 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 We are now ready to test our new permission class. If you try to access the list view, you will get a 403 Forbidden error because we are not logged in, after logging in, you can see the list view.
 
 If you try to access the detail view of a post you didn’t create, you will notice that you can only read it, but not to edit or delete it.
+
+# Chapter 8: Authentication
+
+Authentication is the process of determining the identity of a client. It is the mechanism of associating an incoming request with a set of identifying credentials, such as the user the request came from, or the token that it was signed with. The permission class then checks the user’s permissions, and decides whether or not the request should be granted.
+
+Remember that HHTP is a stateless protocol, so there are no built in way to remember if the user is authenticated or not.
+
+The solution is to pass alonh a unique identifier with each request. Django Rest Framework provides a number of authentication schemes out of the box, basic, session and default. And there are also third party packages like JSON Web Token (JWT) authentication.
+
+## Basic Authentication
+
+The most common form of HTTP authentication is known as “Basic” Authentication. When a client makes an HTTP request, it is forced to send an approved authentication credential before access is granted.
+
+Note that the authorization credentials sent are the unencrypted base64 encoded87 version of `<username>:<password>`. So in my case, this is `wsv:password123` which with base64 encoding is `d3N2OnBhc3N3b3JkMTIz`.
+
+The primary advantage of Basic Authentication is that it is simple to implement. The primary disadvantage is that it is not secure. The username and password are sent over the network as clear text. This means that anyone with access to a network between the client and server can intercept the request and obtain the user’s credentials. And on every single request the server must look up and verify the username and password, which is inefficient.
+
+## Session Authentication
+
+Session Authentication is similar to Basic Authentication in that it is stateless and uses HTTP headers, but it is more secure. Instead of sending the username and password with every request, the client sends a session ID (it received from the server) which is stored in a cookie. The server then looks up the session ID and verifies that it is valid. If it is, the request is granted.
+
+The advantage of this approach is that it is more secure since user credentials are only sent once, not on every request/response cycle as in Basic Authentication. It is also more efficient since the server does not have to verify the user’s credentials each time, it just matches the session ID to the session object which is a fast look up.
+
+There are several downsides however. First, a session ID is only valid within the browser where log in was performed; it will not work across multiple domains. This is an obvious problem when an API needs to support multiple front-ends such as a website and a mobile app. Second, the session object must be kept up-to-date which can be challenging in large sites with multiple servers. How do you maintain the accuracy of a session object across each server? And third, the cookie is sent out for every single request, even those that don’t require authentication, which is inefficient.
+
+As a result, it is generally not advised to use a session-based authentication scheme for any API that will have multiple front-ends.
+
+## Token Authentication
+
+Token-based authentication is stateless: once a client sends the initial user credentials to the server, a unique token is generated and then stored by the client as either a cookie or in local storage89. This token is then passed in the header of each incoming HTTP request and the server uses it to verify that a user is authenticated. The server itself does not keep a record of the user, just whether a token is valid or not.
+
+> Cookies vs Local Storage
+> Cookies are used for reading server-side information. They are smaller (4KB) in size and automatically sent with each HTTP request. LocalStorage is designed for client-side information. It is much larger (5120KB) and its contents are not sent by default with each HTTP request. Tokens stored in both cookies and localStorage are vulnerable to XSS attacks. The current best practice is to store tokens in a cookie with the httpOnly and Secure cookie flags.
+
+There are several advantages of using token authentication over session authentication:
+
+Stateless: Token authentication is stateless, which means that the server does not need to maintain any session data on the server-side, making it more scalable and easier to manage.
+
+Cross-domain authentication: Token authentication allows for cross-domain authentication, which is not possible with session authentication. Tokens can be used to authenticate users across different domains or subdomains without the need to share session data between them.
+
+Performance: Token authentication can offer better performance compared to session authentication because there is no need to query a database or cache on every request to retrieve session data. The token contains all the necessary information, reducing the number of server requests needed to authenticate the user.
+
+Security: Token authentication is considered more secure than session authentication because tokens are usually encrypted and signed, making them less susceptible to attacks such as session hijacking. In contrast, session IDs are often stored in cookies, which can be susceptible to cookie stealing attacks.
+
+Mobile-friendly: Token authentication is more mobile-friendly than session authentication because it allows for authentication without the need for cookies. Cookies may not always be supported on mobile devices or may be blocked by privacy settings, making it difficult to use session authentication on mobile devices.
+
+## Default Authentication
+
+The default authentication schemes may be set globally, using the `DEFAULT_AUTHENTICATION_CLASSES` setting. For example.
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+```
+
+## Implementing Token Authentication
+
+Now we need to update our authentication system to use tokens. The first step is to update our `DEFAULT_AUTHENTICATION_CLASSES` setting to use `TokenAuthentication` as follows:
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+```
+
+We keep SessionAuthentication since we still need it for our Browsable API, but now use tokens to pass authentication credentials back and forth in our HTTP headers. We also need to add the `authtoken` app which generates the tokens on the server. It comes included with Django REST Framework but must be added to our `INSTALLED_APPS` setting:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # local apps
+    'posts.apps.PostsConfig',
+    # 3rd party
+    'rest_framework',
+    'corsheaders',
+    'rest_framework.authtoken',
+    ]
+```
+
+Since we changed installed apps, we need to run `python manage.py migrate` to update our database.
+
+```bash
+$ python manage.py migrate
+```
+
+if you run the server and visited the admin page, you will see that a new table has been added to the database called `Tokens`. This is where the tokens are stored.
+
+![Tokens table](assets/tokens.png)
+
+## Endpoints
+
+We also need to create endpoints so users can log in and log out. We could create a dedicated users app for this purpose and then add our own urls, views, and serializers. However user authentication is an area where we really do not want to make a mistake. And since almost all APIs require this functionality, it makes sense that there are several excellent and tested third-party packages we can use instead. 
+
+Notably we will use dj-rest-auth in combination with django-allauth to simplify things. Don’t feel bad about using third-party packages. They exist for a reason and even the best Django professionals rely on them all the time. There is no point in reinventing the wheel if you don’t have to!
+
+## dj-rest-auth
+
+To add login, logout, and password reset functionality to our API, we will use the dj-rest-auth package. 
+
+To install it, run the following command:
+
+```bash
+$ pip install dj-rest-auth
+```
+
+Then add it to our `INSTALLED_APPS` setting:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # local apps
+    'posts.apps.PostsConfig',
+    # 3rd party
+    'rest_framework',
+    'corsheaders',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    ]
+```
+
+update our ` django_project/urls.py` file to include the urls from dj-rest-auth:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("posts.urls")),
+    path("api-auth/", include("rest_framework.urls")),
+    path("api/v1/dj-rest-auth/", include("dj_rest_auth.urls")),
+]
+```
+
+We are done! Now we can test our endpoints. visit the following urls in your browser:
+
+
+- http://127.0.0.1:8000/api/v1/dj-rest-auth/login/
+- http://127.0.0.1:8000/api/v1/dj-rest-auth/logout/
+- http://127.0.0.1:8000/api/v1/dj-rest-auth/password/reset
+- http://127.0.0.1:8000/api/v1/dj-rest-auth/password/reset/confirm
+
+## User Registration
+
+We can also add user registration functionality to our API. To do this, we will use the `django-allauth` package which comes with user registration as well as a number of additional features to the Django auth system such as social authentication via Facebook, Google, Twitter, etc.
+
+To install it, run the following command:
+
+```bash
+$ pip install django-allauth
+```
+
+Then add several new apps to our `INSTALLED_APPS` setting:
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # local apps
+    'posts.apps.PostsConfig',
+    # 3rd party
+    'rest_framework',
+    'corsheaders',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'allauth', # new
+    'allauth.account', # new
+    'allauth.socialaccount', # new
+    'dj_rest_auth.registration', # new
+    ]
+```
+
+We also need to add the following settings to our `settings.py` file:
+
+```python
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request" 
+            ],
+        },
+    },
+]
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+SITE_ID = 1 
+```
+
+We include the `django.template.context_processors.request` context processor so we can access the request object in our templates. We also set the `EMAIL_BACKEND` setting to `django.core.mail.backends.console.EmailBackend` so we can see emails in the console. Finally, we set the `SITE_ID` setting to 1. This is required by django-allauth.
+
+We also need to add the following urls to our `django_project/urls.py` file:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("posts.urls")),
+    path("api-auth/", include("rest_framework.urls")),
+    path("api/v1/dj-rest-auth/", include("dj_rest_auth.urls")),
+    path("api/v1/dj-rest-auth/registration/", include("dj_rest_auth.registration.urls")),
+]
+```
+
+If you visit the following url in your browser, you will see a registration form:
+
+http://127.0.0.1:8000/api/v1/dj-rest-auth/registration/
+
+![Registration form](assets/registration.png)
+
+

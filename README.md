@@ -2,6 +2,8 @@
 
 My cheat sheets for variety of topics including
 
+* Django for apis book
+* Git
 * Electronics II (2 cheat sheets)
 * Probability (2 parts)
 * Circuits
