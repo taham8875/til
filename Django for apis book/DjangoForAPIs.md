@@ -1560,3 +1560,70 @@ http://127.0.0.1:8000/api/v1/dj-rest-auth/registration/
 ![Registration form](assets/registration.png)
 
 
+# Chapter 9: Viewsets and Routers
+
+Viewsets and routers are two additional features of the Django REST Framework that we can use to simplify and speedup our API development.
+
+Single viewsets can be used to replace multiple views. Routers can be used to automatically generate URLs for our viewsets.
+
+## Create user endpoint
+
+Create user serializer in `posts/serializers.py`:
+
+```python
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Post
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+```
+
+Create user viewset in `posts/views.py`:
+
+```python
+from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser
+from django.contrib.auth.models import User
+from .serializers import PostSerializer, UserSerializer
+from .models import Post
+from .permissions import IsAuthorOrReadOnly
+
+class PostViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthorOrReadOnly,)
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+```
+
+We are using the `ModelViewSet` class which provides the `list()`, `retrieve()`, `create()`, `update()`, and `destroy()` actions. (both list view and detail view)
+
+Create router in `posts/urls.py`:
+
+```python
+from django.urls import path
+from .views import PostViewSet, UserViewSet
+from rest_framework import SimpleRouter
+
+router = SimpleRouter()
+router.register("", PostViewSet, basename="post")
+router.register("users", UserViewSet, basename="user")
+
+urlpatterns = router.urls
+```
+
+We are done! Now we can test our endpoints. visit the following urls in your browser:
+
+- http://127.0.0.1:8000/api/v1/users/ (users - only shows if you are admin user)
+- http://127.0.0.1:8000/api/v1/ (posts)
