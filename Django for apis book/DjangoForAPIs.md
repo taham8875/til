@@ -1,14 +1,31 @@
+# Django for APIs Book Cheat Sheet
+
+
+![Django for APIs Book Cover](assets/cover.png)
+
+
+Hi, this is a cheat sheet for the book [Django for APIs](https://djangoforapis.com/), i will be using this cheat sheet to summarize the book and to be able to return to something if i needed a quick refresh.
+
+I ignored some of the book content, like the deployment part and using git, I wanted to focus only on the and Django REST Framework parts.
+
+I hope you find it useful.
+
+You can find my cheat sheet code [here](https://github.com/taham8875/coding-playground/tree/3c743027c68dda075bfa0802ba8d2ad2d61e695d/Django), in projects 1, 2 and 3.
+
+Here is the source code for the original book [here](https://github.com/wsvincent/restapiswithdjango)
+
+
 # Chapter 1 - Inital Set Up
 
 ## The Command Line
 
 unlike the book approach, i used [cmder](https://cmder.app/)
 
-s the computer name/username :
+the computer name/username :
 
 ```bash
 $ whoami
-desktop-6aark50\taha
+desktop-7yure43\taha
 ```
 
 print hello world :
@@ -1627,3 +1644,108 @@ We are done! Now we can test our endpoints. visit the following urls in your bro
 
 - http://127.0.0.1:8000/api/v1/users/ (users - only shows if you are admin user)
 - http://127.0.0.1:8000/api/v1/ (posts)
+
+
+# Chapter 10: Schema and Documentation
+
+schema vs documentation:
+
+- schema: machine readable
+- documentation: human readable
+
+
+
+## Schema
+
+The Django REST Framework provides a number of features to simplify API development. One of these features is the ability to automatically generate a schema for our API. A schema is a machine-readable document that describes the available endpoints, what resources they manipulate, what operations they perform, and what parameters they expect.
+
+
+The OpenAPI specification is the current default way to document an API. It describes common rules around format for available endpoints, inputs, authentication methods, contact information, and more. As of this writing, drf-spectacular is the recommended third-party package for generating an OpenAPI 3 schema for Django REST Framework. To start, install drf-spectacular with Pip in the usual way.
+
+```bash
+$ pip install drf-spectacular
+```
+
+Then add the following settings to your `settings.py` file:
+
+```python
+INSTALLED_APPS = [
+    # ...
+    "drf_spectacular",
+    # ...
+]
+```
+
+Then register `drf-spectacular` within the `REST_FRAMEWORK` section of the `django_project/settings.py`
+file.
+
+```python
+REST_FRAMEWORK = {
+    # ...
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # ...
+}
+```
+
+The last step is adding some metadata such as title, description, and version to the default settings. Create a new section in `django_project/settings.py` and add the following:
+
+```python
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Blog API",
+    "DESCRIPTION" : "A sample blog to learn about DRF",
+    "VERSION": "1.0.0",
+}
+```
+
+To know more about setting configurations, visit the [documentation](https://drf-spectacular.readthedocs.io/en/latest/settings.html).
+
+To generate the schema as a standalone file we can use a management command and specify the name of the file, which will be `schema.yml`.
+
+```bash
+$ python manage.py spectacular --file schema.yml
+```
+
+Now you can open the `schema.yml` file and see the schema.
+
+## Dynamic Schema
+
+The schema we generated in the previous section is static. This means that it will not change if we add new endpoints or change the existing ones. To generate a dynamic schema (serve it directly from our API as a URL route), we need to add the following to our `django_project/urls.py` file:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("posts.urls")),
+    path("api-auth/", include("rest_framework.urls")),
+    path("api/v1/dj-rest-auth/", include("dj_rest_auth.urls")),
+    path("api/v1/dj-rest-auth/registration/", include("dj_rest_auth.registration.urls")),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+]
+```
+
+
+## Documentation
+
+There are two API documentation tools supported by `drf-spectacular`: `Redoc` and `SwaggerUI`. Fortunately transforming our schema into either is an easy process. We just need to add the following to our `django_project/urls.py` file:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("posts.urls")),
+    path("api-auth/", include("rest_framework.urls")),
+    path("api/v1/dj-rest-auth/", include("dj_rest_auth.urls")),
+    path("api/v1/dj-rest-auth/registration/", include("dj_rest_auth.registration.urls")),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+]
+```
+
+
