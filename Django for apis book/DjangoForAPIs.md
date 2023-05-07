@@ -4,9 +4,9 @@
 ![Django for APIs Book Cover](assets/cover.png)
 
 
-Hi, this is a cheat sheet for the book [Django for APIs](https://djangoforapis.com/), i will be using this cheat sheet to summarize the book and to be able to return to something if i needed a quick refresh.
+Hi, this is a cheat sheet for the book [Django for APIs](https://djangoforapis.com/), I will use this cheat sheet to summarize the book and to be able to return to it if I needed a quick refresh.
 
-I ignored some of the book content, like the deployment part and using git, I wanted to focus only on the and Django REST Framework parts.
+I ignored some of the book content, like the deployment part and using git, I wanted to focus only on Django REST Framework.
 
 I hope you find it useful.
 

@@ -1,3 +1,16 @@
+# Introducing Go Cheat Sheet
+
+
+![Introducing Go](assets/cover.png)
+
+
+Hi, this is a cheat sheet for the book [Introducing Go](https://www.oreilly.com/library/view/introducing-go/9781491941997/), I will use this cheat sheet to summarize the book and to be able to return to it if I needed a quick refresh.
+
+I ignored some of the book content, like the testing chapter, I wanted to focus only on the beginner basics.
+
+I hope you find it useful.
+
+
 # Chapter 1: Getting Started
 
 Go is a general-purpose language designed with systems programming in mind. It is strongly typed and garbage-collected and has explicit support for concurrent programming. Programs are constructed from packages, whose properties allow efficient management of dependencies. The existing implementations use a traditional compile/link model to generate executable binaries.
@@ -809,4 +822,783 @@ func main() {
 new takes a type as an argument, allocates enough memory to fit a value of that type, and returns a pointer to it.
 
 Note that go has garbage collection, so unlike C, we don't need to worry about freeing memory.
+
+
+# Chapter 7 - Structs and Interfaces
+
+## Structs
+
+A struct is a collection of fields.
+
+```go
+type Circle struct {
+    x float64
+    y float64
+    r float64
+}
+```
+
+A shorter way to declare structs:
+
+```go
+type Circle struct {
+    x, y, r float64
+}
+```
+
+Initializing structs:
+
+```go
+var circle Circle
+```
+
+This will initialize all the fields to their zero value. We can also initialize a struct using the `new` function, which will return a pointer to the struct:
+
+```go
+circle := new(Circle)
+```
+
+Using `new` in this way is uncommon and usually not preferred.
+
+If you want to initialize the struct:
+
+
+```go
+circle := Circle{x: 0, y: 0, r: 5}
+```
+
+or
+
+```go
+circle := Circle{0, 0, 5}
+```
+
+You can also initialize a struct using the `&` operator if you want to return a pointer:
+
+```go
+circle := &Circle{0, 0, 5}
+```
+
+## Fields
+
+We can access struct fields using a dot `.`:
+
+```go
+circle.x = 10
+circle.y = 5
+```
+
+## Functions
+
+Let's create a function that calculates the area of a circle:
+
+```go
+func circleArea(c Circle) float64 {
+    return math.Pi * c.r  *c.r
+}
+```
+
+to call this function:
+
+```go
+c := Circle{0, 0, 5}
+fmt.Println(circleArea(c))
+```
+
+You can also use a pointer to a circle:
+
+```go
+func circleArea(c *Circle) float64 {
+    return math.Pi * c.r*c.r
+}
+```
+
+to call this function:
+
+```go
+c := Circle{0, 0, 5}
+fmt.Println(circleArea(&c))
+```
+
+
+## Methods
+
+We can define methods on structs. A method is a function with a special receiver argument.
+
+The receiver appears in its own argument list between the `func` keyword and the method name.
+
+In this example, the `area` method has a receiver of type `Circle` named `c`.
+
+```go
+func (c *Circle) area() float64 {
+    return math.Pi * c.r * c.r
+}
+```
+
+To call the method:
+
+```go
+c := Circle{0, 0, 5}
+fmt.Println(c.area())
+```
+
+This is much easier to read. We no longer need the `&` operator (Go automatically knows to pass a pointer to the circle for this method).
+
+Let's do the same thing with a rectangle:
+
+```go
+type Rectangle struct {
+    x1, y1, x2, y2 float64
+}
+
+func (r *Rectangle) area() float64 {
+    l := distance(r.x1, r.y1, r.x1, r.y2)
+    w := distance(r.x1, r.y1, r.x2, r.y1)
+    return l * w
+}
+```
+
+the distance function:
+
+```go
+func distance(x1, y1, x2, y2 float64) float64 {
+    a := x2 - x1
+    b := y2 - y1
+    return math.Sqrt(a*a + b*b)
+}
+```
+
+`main` has:
+
+```go
+r := Rectangle{0, 0, 10, 10}
+fmt.Println(r.area())
+```
+
+## Embedded Types
+
+Go supports embedding types in other types. This is usually referred to as inheritance or subclassing in other languages.
+
+```go
+type Person struct {
+    Name string
+}
+
+func (p *Person) Talk() {
+    fmt.Println("Hi, my name is", p.Name)
+}
+```
+
+Now suppose we wanted to create a new `woman` struct. We could do this:
+
+```go
+type Woman struct {
+    Person Person
+    hair string
+}
+```
+
+This would work, but we would rather say an woman is a person, rather than an woman has a person. Go supports relationships like this by using embedded types (sometimes also referred to as anonymous fields)—they look like this:
+
+```go
+type Woman struct {
+    Person
+    hair string
+}
+```
+
+We can access the `Talk` method using the following syntax:
+
+```go
+sara := new(Woman)
+sara.Person.Talk()
+```
+
+But we can also call the method as if it was defined on the `Woman` struct itself:
+
+```go
+sara := new(Woman)
+sara.Talk()
+```
+
+## Interfaces
+
+An interface is a collection of method signatures that a Type can implement.
+
+```go
+type Shape interface {
+    area() float64
+    perimeter() float64
+}
+```
+
+To implement an interface, we just need to implement all the methods in the interface.
+
+```go
+type Circle struct {
+    x, y, r float64
+}
+
+func (c *Circle) area() float64 {
+    return math.Pi * c.r*c.r
+}
+
+func (c *Circle) perimeter() float64 {
+    return 2 * math.Pi * c.r
+}
+```
+
+We can now pass a Circle into a function that takes a Shape:
+
+```go
+func totalArea(shapes ...Shape) float64 {
+    var area float64
+    for _, s := range shapes {
+        area += s.area()
+    }
+    return area
+}
+
+func main() {
+    c := Circle{0, 0, 5}
+    fmt.Println(totalArea(&c))
+}
+```
+
+# Chapter 8 - Packages
+
+## Strings
+
+Go includes a large number of functions to work with strings in the `strings` package.
+
+To search for a smaller string in a bigger string, use the `Contains` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Contains("test", "es")) // true
+}
+```
+
+To count the number of times a smaller string appears in a bigger string, use the `Count` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Count("test", "t")) // 2
+}
+```
+
+To determine if a string starts with a given prefix, use the `HasPrefix` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.HasPrefix("test", "te")) // true
+}
+```
+
+To determine if a string ends with a given suffix, use the `HasSuffix` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.HasSuffix("test", "st")) // true
+}
+```
+
+To find the index of a smaller string in a bigger string, use the `Index` function (It returns -1 if the string is not found):
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Index("test", "e")) // 1
+}
+```
+
+To join a slice of strings, use the `Join` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    sl := []string{"test", "test2", "test3"}
+    fmt.Println(strings.Join(sl, "-")) // test-test2-test3
+}
+```
+
+To repeat a string count number of times, use the `Repeat` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Repeat("test", 5)) // testtesttesttesttest
+}
+```
+
+To replace a substring with another substring, use the `Replace` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Replace("aaaa", "a", "b", 2)) // bbaa
+}
+```
+
+To split a string into a slice of strings by a separator string, use the `Split` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Split("a-b-c-d-e", "-")) // [a b c d e]
+}
+```
+
+To convert a string to lowercase, use the `ToLower` function, to convert to uppercase, use the `ToUpper` function:
+
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.ToLower("TEST")) // test
+    fmt.Println(strings.ToUpper("test")) // TEST
+}
+```
+
+## Files and Folders
+
+To open a file, use the `Open` function from the `os` package:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    file, err := os.Open("test.txt")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    
+    defer file.Close()
+
+    // get the file size
+    stat, err := file.Stat()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Printf("The file size : %d\n", stat.Size())
+    
+    // read the file
+    bs := make([]byte, stat.Size())
+    _, err = file.Read(bs)
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+
+    str := string(bs)
+    fmt.Println(str)
+}
+```
+
+Reading files is very common, so there’s a shorter way to do this:
+
+```go
+package main
+
+import (
+    "fmt"
+    "io/ioutil"
+)
+
+func main() {
+    bs, err := ioutil.ReadFile("test.txt")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    str := string(bs)
+    fmt.Println(str)
+}
+```
+
+To create a file, use the `Create` function from the `os` package:
+
+```go
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    file, err := os.Create("test.txt")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    defer file.Close()
+
+    file.WriteString("test")
+}
+```
+
+## Containers and Sort
+
+### Lists
+
+The `container/list` package implements a doubly linked list.
+
+```go
+package main
+
+import (
+    "container/list"
+    "fmt"
+)
+
+func main() {
+	// Create a new list and put some numbers in it.
+	l := list.New()
+	e4 := l.PushBack(4)
+	e1 := l.PushFront(1)
+	l.InsertBefore(3, e4)
+	l.InsertAfter(2, e1)
+
+	// Iterate through list and print its contents.
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Println(e.Value)
+	}
+}
+```
+
+### Sort
+
+The `sort` package implements sorting for builtins and user-defined types.
+
+```go
+package main
+
+import (
+    "fmt"
+    "sort"
+)
+
+func main() {
+    strs := []string{"c", "a", "b"}
+    sort.Strings(strs)
+    fmt.Println("Strings:", strs)
+
+    ints := []int{7, 2, 4}
+    sort.Ints(ints)
+    fmt.Println("Ints:   ", ints)
+
+    s := sort.IntsAreSorted(ints)
+    fmt.Println("Sorted: ", s)
+}
+```
+
+## Creating packages
+
+Let's create a custom package that adds two numbers:
+
+
+```bash
+$ mkdir myproject
+$ cd myproject
+$ go mod init myproject
+$ mkdir sum
+$ cd sum
+$ touch sum.go
+```
+
+```go
+package sum
+
+func Add(x int, y int) int {
+    return x + y
+}
+```
+
+```bash
+$ cd ..
+$ touch main.go
+```
+
+```go
+package main
+
+import (
+    "fmt"
+    "myproject/sum"
+)
+
+func main() {
+    fmt.Println(sum.Add(1, 2))
+}
+```
+
+```bash
+$ go run main.go
+3
+```
+
+
+# Chapter 9 - Concurrency
+
+Large programs are often made up of many smaller subprograms. For example, a web server handles requests made from web browsers and serves up HTML web pages in response. Each request is handled like a small program.
+
+It would be ideal for programs like these to be able to run their smaller components at the same time (in the case of the web server, to handle multiple requests). Making progress on more than one task simultaneously is known as concurrency. Go has rich support for concurrency using goroutines and channels.
+
+## Goroutines
+
+A goroutine is a function that is capable of running concurrently with other functions. To create a goroutine we use the keyword `go` followed by a function invocation:
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func f(n int) {
+    for i := 0; i < 10; i++ {
+        fmt.Println(n, ":", i)
+    }
+}
+
+func main() {
+    go f(0)
+    var input string
+    fmt.Scanln(&input)
+}
+```
+
+This program consists of two goroutines. The first goroutine is implicit and is the main function itself. The second goroutine is created when we call `go f(0)`. Normally when we invoke a function our program will execute all the statements in a function and then return to the next line following the invocation. With a goroutine we return immediately to the next line and don't wait for the function to complete. This is why the call to the `Scanln` function has been included; without it the program would exit before being given the opportunity to print all the numbers.
+
+Goroutines are lightweight and we can easily create thousands of them. We can modify our program to run 10 goroutines by doing this:
+
+```go
+func main() {
+	for i := 0; i < 10; i++ {
+		go f(i)
+	}
+	var input string
+	fmt.Scanln(&input)
+}
+```
+
+You may have noticed that when you run this program it seems to run the goroutines in order rather than simultaneously. Let’s add some delay to the function using `time.Sleep` and `rand.Intn`:
+
+```go
+package main
+
+import (
+    "fmt"
+    "math/rand"
+    "time"
+)
+
+func f(n int) {
+    for i := 0; i < 10; i++ {
+        fmt.Println(n, ":", i)
+        time.Sleep(time.Millisecond * time.Duration(rand.Intn(25000)))
+    }
+}
+
+func main() {
+    for i := 0; i < 10; i++ {
+        go f(i)
+    }
+    var input string
+    fmt.Scanln(&input)
+}
+```
+
+## Channels
+
+Channels provide a way for two goroutines to communicate with one another and synchronize their execution. Here is an example program using channels:
+
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func pinger(c chan string) {
+    for i := 0; ; i++ {
+        c <- "ping"
+    }
+}
+
+func ponger(c chan string) {
+    for i := 0; ; i++ {
+        c <- "pong"
+    }
+}
+
+func printer(c chan string) {
+    for {
+        msg := <- c
+        fmt.Println(msg)
+        time.Sleep(time.Second * 1)
+    }
+}
+
+func main() {
+    var c chan string = make(chan string)
+
+    go pinger(c)
+    go ponger(c)
+    go printer(c)
+
+    var input string
+    fmt.Scanln(&input)
+}
+```
+
+This program prints "ping" and "pong" in the terminal over and over again. Notice that the `printer` function is taking a channel as its argument.
+
+To create a channel we use the `make` function:
+
+```go
+var c chan string = make(chan string)
+```
+
+## Channel Direction
+
+We can specify a direction on a channel type thus restricting it to either sending or receiving.
+
+For example, we can modify our `pinger` function to only accept a channel :
+
+
+```go
+func pinger(c chan<- string)
+```
+
+Similarly, we can modify the `printer` function to only accept a channel for receiving values:
+
+```go
+func printer(c <-chan string)
+```
+
+When doing so, if we try to send or receive values from the channel that we’re not supposed to, we will get a compile-time error.
+
+
+## Select
+
+`select` is like a `switch` but for channels. 
+
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func main() {
+    c1 := make(chan string)
+    c2 := make(chan string)
+
+    go func() {
+        for {
+            c1 <- "from 1"
+            time.Sleep(time.Second * 2)
+        }
+    }()
+
+    go func() {
+        for {
+            c2 <- "from 2"
+            time.Sleep(time.Second * 3)
+        }
+    }()
+
+    go func() {
+        for {
+            select {
+            case msg1 := <-c1:
+                fmt.Println(msg1)
+            case msg2 := <-c2:
+                fmt.Println(msg2)
+            case <-time.After(time.Second):
+                fmt.Println("timeout")
+            }
+        }
+    }()
+
+    var input string
+    fmt.Scanln(&input)
+}
+```
+
+This program prints "from 1" every 2 seconds and "from 2" every 3 seconds. If one seconds passed and non of the two channels are ready, it prints timeout. `select` picks the first channel that is ready and receives from it (or sends to it). If more than one of the channels are ready then it randomly picks which one to receive from. If none of the channels are ready,  the statement blocks until one becomes available.
+
 
