@@ -314,3 +314,281 @@ knowledge of the inner workings of the class as possible.
 
 Give the users only what they absolutely need. In effect, this means the class has as few interfaces as possible.
 
+# Chapter 3: Advanced Object-Oriented Concepts
+
+## Constructors
+
+* A constructor is a special method that is called when an object is instantiated (i.e., created). The constructor is used to initialize the object.
+
+* A constructor has the same name as the class and no return type. If there is a return type, then the compiler will treat the constructor as a method.
+
+```java
+// Constructor
+public Cabbie() {
+/* code to construct the object */
+}
+
+// Method
+public void Cabbie() {
+/* code to construct the object */
+}
+```
+
+### When is a constructor called?
+
+* A constructor is called when an object is instantiated (i.e., created). The constructor is used to initialize the object.
+
+```java
+Cabbie myCabbie = new Cabbie();
+```
+
+### What is inside a constructor?
+
+* A constructor is used to initialize the object. The constructor is used to set the initial values of the object’s instance variables, for example, if you have a stopwatch object, you might want to initialize the stopwatch to zero.
+
+```java
+public class Stopwatch {
+    private int elapsedTime;
+    private int previousTime;
+    private boolean isRunning;
+
+    public Stopwatch() {
+        elapsedTime = 0;
+        previousTime = 0;
+        isRunning = false;
+    }
+}
+```
+
+### The default constructor
+
+If you do not provide a constructor, then the compiler will provide a default constructor.
+
+The only action that a default constructor takes is to call the constructor of its superclass. In many cases, the superclass will be part of the language framework, like the `Object` class in Java. For example, if a constructor is not provided for the Cabbie class, the following default constructor is inserted
+
+```java
+public Cabbie() {
+    super();
+}
+```
+
+**Providing a Constructor**
+
+The rule of thumb is that you should always provide a constructor, even if you do not plan on doing anything inside it. You can provide a constructor with nothing in it and then add to it later. Although there is technically nothing wrong with using the default constructor provided by the compiler, it is always nice to know exactly what your code looks like. 
+
+It is not surprising that maintenance becomes an issue here. If you depend on the default constructor and then maintenance is performed on the class that added another constructor, then the default constrictor is not created. In short, the default constructor is only added if you don’t include one.As soon as you include just one, the default constructor is not included.
+
+### Using multiple constructors
+
+* You can have more than one constructor in a class. This is called overloading the constructor. The constructors must have different signatures. The signature of a constructor is the number and type of the parameters. (Not the return type.)
+
+
+```java
+public class Cabbie {
+    private String name;
+    private int numPassengers;
+
+    public Cabbie(String name) {
+        this.name = name;
+        numPassengers = 0;
+    }
+
+    public Cabbie(String name, int numPassengers) {
+        this.name = name;
+        this.numPassengers = numPassengers;
+    }
+}
+```
+
+### Overloading methods
+
+* You can have more than one method in a class with the same name. This is called overloading the method. The methods must have different signatures. The signature of a method is the number and type of the parameters. (Not the return type.)
+
+```java
+// different parameter list
+public void getCab (String cabbieName);
+// different parameter list
+public void getCab (int numberOfPassengers);
+```
+
+### The concept of scope
+
+* Scope refers to the visibility of a variable. A variable can be visible to the entire class, or it can be visible only to a method. The scope of a variable is determined by where it is declared.
+
+the state of the object is represented by attributes.There are three types of attributes :
+
+* Local attributes
+* Object attributes
+* Class attributes
+
+
+### Local attributes
+
+* Local attributes are declared inside a method and visible only to that method. Local attributes are not visible to any other method or class.
+
+```java
+public class Number {
+    public method1() {
+        int count;
+    }
+    public method2() {
+
+    }
+}
+```
+
+The method `method1` contains a local variable called `count`.This integer is accessible only inside `method1`.The method `method2` has no idea that the integer `count` even exists.
+
+Note that scope is delineated by the curly braces `{}`.
+
+For more fun with scope, consider the following example:
+
+```java
+public class Number {
+    public method1() {
+        int count;
+    }
+    public method2() {
+        int count;
+    }
+}
+```
+
+Although both methods have a variable called `count`, they are two different variables. The variable `count` in `method1` is not visible to `method2`, and vice versa.
+
+### Object attributes
+
+There are many design situations in which an attribute must be shared by several methods within the same object.
+
+```java
+public class Number {
+    private int count;
+    public method1() {
+        count = 1;
+    }
+    public method2() {
+        count = 2;
+    }
+}
+```
+
+You can play some interesting games with scope. Consider the following code:
+
+```java
+public class Number {
+    private int count;
+    public method1() {
+        int count;
+    }
+    public method2() {
+        int count;
+    }
+}
+```
+
+In this case, there are actually three totally separate memory locations with the name of count for each object.The object owns one copy, and `method1()` and `method2()` each
+have their own copy.
+
+
+To access the object variable from within one of the methods, say `method1()`, you can use a pointer called `this` in the C-based languages:
+
+```java
+public method1() {
+    int count;
+    this.count = 1;
+}
+```
+
+Notice that there is some code that looks a bit curious:
+
+```java
+this.count = 1;
+```
+
+
+The selection of the word `this` as a keyword is perhaps unfortunate. However, we must live with it.The use of the `this` keyword directs the compiler to access the object variable `count` and not the local variables within the method bodies.
+
+
+*Note*
+
+The keyword `this` is a reference to the current object.
+
+### Class attributes
+
+
+As mentioned earlier, it is possible for two or more objects to share attributes. In Java, C#, and C++, you do this by making the attribute static:
+
+```java
+public class Number {
+    private static int count;
+    public method1() {
+    }
+    public method2() {
+    }
+}
+```
+
+There are many valid uses for class attributes, for example, to keep track of the number of objects created from a class.
+
+```java
+public class Number {
+    private static int count;
+    public Number() {
+        count++;
+    }
+    public static int getCount() {
+        return count;
+    }
+}
+```
+
+The method `getCount()` is a static method. It is a method that is not associated with any object. It is associated with the class itself. You can call the method without creating an object:
+
+```java
+int count = Number.getCount();
+```
+
+However, you must be aware of potential synchronization problems.
+
+## Operator Overloading
+
+* Operator overloading is a feature of some programming languages that allows the programmer to redefine the meaning of an operator when applied to operands of a user-defined type.
+
+* Operator overloading is syntactic sugar. It allows you to write code that is easier to read and understand.
+
+* Operator overloading is supported in C++, however, it is not supported in Java or C#.
+
+For example, the `+` operator is used to add two numbers together. However, it can also be used to concatenate two strings together in java, java itself has overloaded the `+` operator, but it does not allow operator overloading.
+
+You may read more from here 
+
+https://stackoverflow.com/questions/3559563/why-doesnt-java-need-operator-overloading
+
+## Multiple Inheritance
+
+* Multiple inheritance is a feature of some object-oriented computer programming languages in which an object or class can inherit characteristics and features from more than one parent object or parent class.
+
+In some OO languages, such as C++, you can.
+
+However, this situation falls into a category similar to operator overloading. Multiple inheritance is a very powerful technique, and in fact, some problems are quite difficult to solve without it. Multiple inheritance can even solve some problems quite elegantly. However, multiple inheritance can significantly increase the complexity of a system, both for the programmer and the compiler writers.
+
+As with operator overloading, the designers of Java and .NET decided that the increased complexity of allowing multiple inheritance far outweighed its advantages, so they eliminated it from the language. In some ways, the Java and .NET language construct of interfaces compensates for this; however, the bottom line is that Java and .NET do not allow conventional multiple inheritance
+
+There are a good discussion on stackoverflow about this topic
+
+https://stackoverflow.com/questions/2515477/why-is-there-no-multiple-inheritance-in-java-but-implementing-multiple-interfac
+
+## Classes and References
+
+From Effective C++:
+
+> The problem with complex data structures and objects is that they might contain references. Simply making a copy of the reference does not copy the data structures or the object that it references. In the same vein, when comparing objects, simply comparing a pointer to another pointer only compares the references—not what they point to.
+
+
+### Deep copy vs shallow copy
+
+A deep copy is when all the references are followed and new copies are created for all referenced objects. There might be many levels involved in a deep copy. For objects with references to many objects, which in turn might have references to even more objects, the copy itself can create significant overhead. A shallow copy would simply copy the reference and not follow the levels.
+
+The following figure shows the difference between deep copy and shallow copy
+
+![deep copy vs shallow copy](./assets/deep_copy_vs_shallow_copy.jpg)
