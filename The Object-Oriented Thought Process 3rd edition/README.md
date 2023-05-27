@@ -592,3 +592,153 @@ A deep copy is when all the references are followed and new copies are created f
 The following figure shows the difference between deep copy and shallow copy
 
 ![deep copy vs shallow copy](./assets/deep_copy_vs_shallow_copy.jpg)
+
+# Chapter 4: The Anatomy of a Class
+
+Our sample class
+
+```java
+public class Cabbie {
+    // attributes
+    private static string companyName = "Blue Cab Company";
+    private string name;
+    private Cab myCab;
+
+    // constructors
+    // default constructor
+    public Cabbie() {
+        name = null;
+        myCab = null;
+    }
+
+    // constructor with parameters
+    public Cabbie(string name, String cabSerialNumber) {
+        this.name = name;
+        this.myCab = new Cab(cabSerialNumber);
+    }
+
+    // accessors methods
+    public string getName() {
+        return name;
+    }
+
+    public void setName(string name) {
+        this.name = name;
+    }
+
+    public Cab getMyCab() {
+        return myCab;
+    }
+
+    public void setMyCab(Cab myCab) {
+        this.myCab = myCab;
+    }
+
+    public static string getCompanyName() {
+        return companyName;
+    }
+
+    // other methods
+    public void giveDestination(){
+        private void turnRight() {
+            // code to turn right
+        }
+        private void turnLeft() {
+            // code to turn left
+        }
+    }
+}
+
+```
+
+## The name of the class
+
+the name must be descriptive. The choice of a name is important because it provides information about what the class does and how it interacts within larger systems.
+
+The name is also important when considering language constraints. For example, in Java, the public class name must be the same as the filename. If these names do not match, the application won’t compile.
+
+## Comments
+
+Comments are important. They are the only way to document the code. The comments should be clear and concise.
+
+There are three types of comments:
+
+* Block comments `/* */`
+* Line comments `//`
+* Javadoc comments `/** */`
+
+I like this video, it explains why you shouldn't comment your code, and when two use comments
+
+[Don't Write Comments](https://youtu.be/Bf7vDBBOBUA)
+
+## Attributes
+
+Attributes are the variables that are associated with the class, they represent the state of the object. They are also called instance variables or object variables. Attributes are the data that the class manipulates. Attributes are declared within the class body, but outside of any method bodies.
+
+Note the keword `private` before the attributes, this is called access modifier, it specifies the visibility of the attribute. There are four access modifiers in Java:
+
+* `public` - The attribute is visible to all classes.
+* `private` - The attribute is visible only to the class that declares it. 
+* `protected` - The attribute is visible to the class that declares it and to any subclasses and subpackage.
+* `default` - The attribute is visible to the class that declares it and to any classes in the same package.
+
+`public` vs `private` vs `protected` vs `default`:
+
+https://stackoverflow.com/questions/215497/in-java-what-is-the-difference-between-public-default-protected-and-private
+
+Also note the keyword `static` before the attribute, this is called class attribute, it is associated with the class itself, not with any object. There is only one copy of a class attribute, regardless of how many objects are created from the class. Class attributes are declared with the keyword `static`. A case where you might use a class attribute is when you want to keep track of the number of objects that have been created from the class, so whenever the constructor is called, you increment the class attribute.
+
+> **Hide as Much Data as Possible** All the attributes in this example are private. This is in keeping with the design principle of keeping the interface design as minimal as possible. The only way to access these attributes is through the method interfaces provided (which we explore later in this chapter).
+
+
+## Constructors
+
+Constructors are special methods that are called when an object is created. Constructors are used to initialize the attributes of the object. Constructors are declared with the same name as the class. Constructors do not have a return type, not even void. Constructors are called with the `new` keyword.
+
+This Cabbie class contains two constructors. We know they are constructors because they have the same name as the class: Cabbie. The first constructor is the default constructor:
+
+```java
+public Cabbie() {
+    name = null;
+    myCab = null;
+}
+```
+
+Technically, this is not a default constructor provided by the system. Recall that the compiler will provide an empty default constructor if you do not code any constructor for a class. By definition, the reason it is called a default constructor here is because it is a constructor with no arguments, which, in effect, overrides the compiler’s default constructor.
+
+If you provide a constructor with arguments, the system will not provide a default constructor. Although this can seem complicated, the rule is that the compiler’s default constructor is included only if you provide no constructors in your code.
+
+Note that coding no constructor is bad practice. It is better to provide a default constructor, even if it is empty.
+
+Another use of the construction instead of initializing the attributes in the declaration is to validate the values of the attributes. For example, if the name of the cabbie must be at least two characters long, you can validate this in the constructor:
+
+```java
+public Cabbie(string name, String cabSerialNumber) {
+    if (name.length() < 2) {
+        throw new IllegalArgumentException("Name must be at least two characters long");
+    }
+    this.name = name;
+    this.myCab = new Cab(cabSerialNumber);
+}
+```
+
+Multiple constructors are called constructor overloading. The constructors must have different signatures. The signature of a method is the name of the method and the number and type of its parameters. The signature of the default constructor is `Cabbie()`, and the signature of the constructor with parameters is `Cabbie(string, String)`.
+
+## Accessor methods
+
+Also called as getters and setters, they are used to access the attributes of the class. This gives the programmer the ability to control how the attributes are accessed. For example, you may not want any fellow programmers to be able to change the name of the company, so you would not provide a setter for the company name attribute.
+
+## Public interface methods and private implementation methods
+
+Usually, the public interface methods are the methods that are called by other classes, and the private implementation methods are the methods that are called by the public interface methods. The programmer may want to provide a public interface but hide the implementation details. For example, You may want to provide a public method to update the password of a user if he forgets it, but you don't want to expose the encryption details of how the password is encrypted.
+
+```java
+public void updatePassword(string newPassword) {
+    String encryptedPassword = encrypt(newPassword);
+    this.password = encryptedPassword;
+}
+
+private String encrypt(string password) {
+    // code to encrypt the password
+}
+```
