@@ -7,6 +7,7 @@ My cheat sheets for variety of topics including
 * [SageMath](https://github.com/taham8875/sagemath-tutorial)
 * Git
 * Electronics II (2 cheat sheets)
+* Analog IC 
 * Probability (2 parts)
 * Circuits
 * Machines (3 parts)
