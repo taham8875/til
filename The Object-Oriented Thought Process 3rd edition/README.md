@@ -872,12 +872,12 @@ public class DataBaseReader {
         return numOfRecords;
     }
     public String getRecord(int key){
-    /* DB Specific Implementation */
-    return db[key];
+        /* DB Specific Implementation */
+        return db[key];
     }
     public String getNextRecord(){
-    /* DB Specific Implementation */
-    return db[pos++];
+        /* DB Specific Implementation */
+        return db[pos++];
     }
 }
 ```
@@ -895,3 +895,116 @@ The object may be serialized and saved to :
 Serialization is the process of translating a data structure or object state into a format that can be stored or transmitted and reconstructed later.
 
 Serialization and deserialization must use the same specifications. It is sort of like an encryption algorithm. If one object encrypts a string, the object that wants to decrypt it must use the same encryption algorithm.
+
+
+# Chpater 6 - Designing with Objects
+
+Object-oriented (OO) design has been touted as a robust and flexible software development approach. The truth is that you can create both good and bad OO designs just as easily as you can create both good and bad non-OO designs. Don’t be lulled into a false sense of security just because you are using a state-of-the-art design methodology. You must pay attention to the overall design and invest the proper amount of time and effort to create the best possible product.
+
+In the previous chapter, we concentrated on designing good classes. This chapter focuses on designing good systems. A system can be defined as classes that interact with each other. Proper design practices have evolved throughout the history of software development, and there is no reason you should not take advantage of the blood, sweat, and tears of your software predecessors, whether they used OO technologies or not.
+
+Taking advantage of previous efforts is not limited to design practices; you can even incorporate existing legacy code in your object-oriented designs. In many cases, you can take code, which may have been working well for years, and literally wrap it in your objects. The wrapping is discussed later in the chapter.
+
+## Design Guidelines
+
+Generally, a solid OO design process includes the following steps:
+
+1. Doing the proper analysis
+2. Developing a statement of work that describes the system
+3. Gathering the requirements from this statement of work
+4. Developing a prototype for the user interface
+5. Identifying the classes
+6. Determining the responsibilities of each class
+7. Determining how the various classes interact with each other
+8. Creating a high-level model that describes the system to be built
+
+Note that Most of these practices are not specific to OO. They apply to software development in general.
+
+
+> The Ongoing Design Process
+> Despite the best intentions and planning, in all but the most trivial cases, the design is an ongoing process. Even after a product is in testing, design changes will pop up. It is up to the project manager to draw the line that says when to stop changing a product and adding features. I like to call this Version 1.
+
+
+
+the reasons to identify requirements early and keep design changes to a minimum are as follows:
+
+- The cost of a requirement/design change in the design phase is relatively small.
+- The cost of a design change in the implementation phase is significantly higher.
+- The cost of a design change after the deployment phase is astronomical when compared to the first item.
+
+After the software is released, problems that have not been caught and fixed prior to release become much more expensive. To illustrate, consider the dilemma automobile companies face when they are confronted with a recall. If a defect in the automobile is identified and fixed before it is shipped (ideally before it is manufactured), it is much cheaper than if all delivered automobiles have to be recalled and fixed one at a time. Not only is this scenario very expensive, but it damages the reputation of the company. In an increasingly competitive market, high-quality software, support services, and reputation are the competitive advantages that will keep a company in business.
+
+The following sections provide brief summaries of the items listed previously as being part of the  design process. 
+
+### Performing the Proper Analysis
+
+The users must work hand in hand with the developers at all stages. In the analysis phase, the users and the developers must do the proper research and analysis to determine the statement of work, the requirements of the project, and whether to actually do the project.
+
+During the analysis phase, there must not be any hesitation to 
+terminate the project if a valid reason exists to do so. Too many times, pet project status or some 
+political inertia keeps a project going, regardless of the obvious warning signs that cry out for 
+project cancellation.
+
+### Developing a Statement of Work
+
+The statement of work (SOW) is a document that describes the system.
+
+The SOW should give anyone who reads it a complete, high level understanding of the system. Regardless of how it is written, the SOW must represent the complete system and be clear about how the system will look and feel.
+
+The SOW contains everything that must be known about the system. Many customers create a request for proposal (RFP) for distribution, which is similar to the statement of work. A customer creates an RFP that completely describes the system the customer wants built and releases it to multiple vendors. The vendors then use this document, along with whatever analysis they need to do, to determine whether they should bid on the project, and if so, what price to charge.
+
+### Gathering the Requirements
+
+The requirements document describes what the users want the system to do. Even though the level of detail of the requirements document does not need to be of a highly technical nature, the requirements must be specific enough to represent the true nature of the user’s needs for the end product.
+
+Whereas the SOW is a document written in paragraph (even narrative) form, the requirements are usually represented as a summary statement or presented as _bulleted items_. Each individual bulleted item represents one specific requirement of the system.
+
+In many ways, these requirements are the most important part of the system. The SOW might contain irrelevant material; however, the requirements are the final representation of the system that must be implemented.
+
+### Developing a Prototype
+
+One of the best ways to make sure users and developers understand the system is to create 
+a prototype. A prototype is a working model of the system. It does not have to be a complete. It may be a simulated GUI, created by using IDE or on the whiteboard.
+
+
+### Identifying the Classes
+
+After the requirements are documented, the process of identifying classes can begin. From the requirements, one straightforward way of identifying classes is to highlight all the nouns. These tend to represent objects, such as people, places, and things.
+
+Don't get fussy about getting all the classes right the first time. You will have plenty of time to refine the classes as you go through the design process.
+
+### Determining the Responsibilities of Each Class
+
+You need to determine the responsibilities of each class you have identified. This includes the data that the class must store and what operations the class must perform. For example, an Employee object would be responsible for calculating payroll and transferring the money to the appropriate account. It might also be responsible for storing the various payroll rates and the account numbers of various banks.
+
+### Determining How the Classes Interact
+
+Most classes do not exist in isolation. One class can send a message to another class when it needs information from that class, or if it wants the other class to do something for it.
+
+### Creating a Class Model to Describe the System
+
+The class model is a graphical representation of the system. It shows the classes and how they interact with each other. UML is the most popular notation for creating class models.
+
+## Object Wrappers
+
+### Wrapping Structured Code
+
+Object oriented programming is not a separate paradigm from structured programming. When you write a program that uses an object-oriented programming language and are using sound object-oriented design techniques, you are also using structured programming techniques. There is no way around this.
+
+The goal is to wrap structured code in objects.
+
+### Wraping Nonportable Code
+
+remember the `'\007'` example
+
+### Wrapping Existing Classes
+
+Software developers often utilize code written by someone else. Perhaps the code was purchased from a vendor or even written internally within the same organization. In many of these cases, the code cannot be changed. Perhaps the individual who wrote the code is no longer with the organization, or the vendor cannot perform maintenance updates, and so on. This is where the true power of wrappers emerges.
+
+The idea is to take an existing class and alter its implementation or interface by wrapping it inside a new class—just like we did for the structured code and nonportable code. The difference in this case is that, rather than putting an object-oriented face to the code, we are altering its implementation or interface.
+
+Why would we want to do this? Well, the answer lies with both the implementation and the interface.
+
+Consider the database example that we used in Chapter 2. Our goal was to provide the same interface for the developers regardless of which database they were using. In fact, if we need to support another database, our goal would remain the same—to make the transition to the new database transparent to the user.
+
+Also, remember our earlier discussion about creating middleware to provide an interface between objects and relational databases. As developers, we want to use objects. Thus, we want functionality that will allow us to persist objects to a database. What we don’t want to have to do is write SQL code for every single object transaction performed to a relational database. This is where we can consider middleware to be a wrapper, and many object-relational mapping products are available.
