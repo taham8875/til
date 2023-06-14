@@ -1,35 +1,34 @@
 # Chapter 1 - Introduction to Object-Oriented Concepts
 
+- object-oriented (OO) software development has been around since the early 1960s.
 
-* object-oriented (OO) software development has been around since the early 1960s.
+- When systems are working fine, in most cases you should not change them, at least not simply for the sake of change.
 
-* When systems are working fine, in most cases you should not change them, at least not simply for the sake of change.
-
-* Object Wrappers : A wrapper is a class that encapsulates (wraps) the functionality of another class or program.
+- Object Wrappers : A wrapper is a class that encapsulates (wraps) the functionality of another class or program.
 
 ## Procedural Versus Object-Oriented Programming
 
-* Procedural programming is a programming paradigm, derived from structured programming, based on the concept of the procedure call. Procedures, also known as *routines*, *subroutines*, or *functions*, simply contain a series of computational steps to be carried out.
+- Procedural programming is a programming paradigm, derived from structured programming, based on the concept of the procedure call. Procedures, also known as _routines_, _subroutines_, or _functions_, simply contain a series of computational steps to be carried out.
 
-* Object-oriented programming (OOP) is a programming paradigm based on the concept of "objects", which may contain data, in the form of fields, often known as *attributes*; and code, in the form of procedures, often known as *methods*.
+- Object-oriented programming (OOP) is a programming paradigm based on the concept of "objects", which may contain data, in the form of fields, often known as _attributes_; and code, in the form of procedures, often known as _methods_.
 
 > In OO design, the attributes and behaviors are contained within a single object, whereas in procedural, or structured design, the attributes and behaviors are normally separated.
 
-* Data Hiding : In OO terminology, data is referred to as *attributes*, and behaviors are referred to as *methods*. Restricting access to certain attributes and/or methods is called *data hiding*.
+- Data Hiding : In OO terminology, data is referred to as _attributes_, and behaviors are referred to as _methods_. Restricting access to certain attributes and/or methods is called _data hiding_.
 
 ## What Is an Object?
 
-* An object is an instance of a class. Objects are the basic building blocks of an OO system.
+- An object is an instance of a class. Objects are the basic building blocks of an OO system.
 
 ### Object data
 
-* An object's data is referred to as its *attributes*. The data stored within an object represents the state of the object. 
+- An object's data is referred to as its _attributes_. The data stored within an object represents the state of the object.
 
 e.g. A bank account object might have attributes such as account number, balance, and interest rate.
 
 ### Object behavior
 
-* An object's behavior is referred to as its *methods*. The methods of an object represent the operations that can be performed on the object.
+- An object's behavior is referred to as its _methods_. The methods of an object represent the operations that can be performed on the object.
 
 e.g. A bank account object might have methods such as deposit, withdraw, and calculate interest. Also the getter and setter methods.
 
@@ -89,9 +88,9 @@ public class BankAccount {
 
 ## What Is a Class?
 
-* A class is a blueprint or template that describes the details of an object. (think of a cookie cutter)
+- A class is a blueprint or template that describes the details of an object. (think of a cookie cutter)
 
-* A class is a logical grouping of objects that have common properties and behaviors.
+- A class is a logical grouping of objects that have common properties and behaviors.
 
 `public` vs `private` vs `protected` vs `default`:
 
@@ -99,41 +98,39 @@ https://stackoverflow.com/questions/215497/in-java-what-is-the-difference-betwee
 
 ## Encapsulation and Data Hiding
 
-* Encapsulation is the process of combining data and behavior into a single package called an object.
+- Encapsulation is the process of combining data and behavior into a single package called an object.
 
-* Data hiding is the process of hiding the internal data of an object from the outside world.
+- Data hiding is the process of hiding the internal data of an object from the outside world.
 
-* Encapsulation and data hiding are closely related. In fact, encapsulation is often referred to as data hiding.
+- Encapsulation and data hiding are closely related. In fact, encapsulation is often referred to as data hiding.
 
 ### Interface
 
-* An interface is a collection of abstract methods that has no implementation. An interface is a contract between a class and the outside world.
-
+- An interface is a collection of abstract methods that has no implementation. An interface is a contract between a class and the outside world.
 
 ## Inheritance
 
-* Inheritance is the process by which one class acquires the properties of another class. The class that acquires the properties of another class is called the *subclass*, and the class from which the subclass is derived is called the *superclass*.
+- Inheritance is the process by which one class acquires the properties of another class. The class that acquires the properties of another class is called the _subclass_, and the class from which the subclass is derived is called the _superclass_.
 
-* Inheritance is a powerful feature of OO programming because it allows you to reuse existing code without having to rewrite it.
+- Inheritance is a powerful feature of OO programming because it allows you to reuse existing code without having to rewrite it.
 
 ## Abstraction
 
-* Abstraction is the process of hiding the internal details of an object from the outside world. Only the functionality that is necessary to the user should be made available.
+- Abstraction is the process of hiding the internal details of an object from the outside world. Only the functionality that is necessary to the user should be made available.
 
-* Abstraction is closely related to encapsulation and data hiding.
+- Abstraction is closely related to encapsulation and data hiding.
 
-
-Abstraction vs Encapsulation: 
+Abstraction vs Encapsulation:
 
 https://stackoverflow.com/questions/742341/difference-between-abstraction-and-encapsulation
 
 ## Is-a Relationships
 
-* Inheritance is often referred to as an *is-a* relationship. For example, a checking account is a bank account, a savings account is a bank account, and a certificate of deposit (CD) is a bank account. In each case, the subclass inherits the properties of the superclass.
+- Inheritance is often referred to as an _is-a_ relationship. For example, a checking account is a bank account, a savings account is a bank account, and a certificate of deposit (CD) is a bank account. In each case, the subclass inherits the properties of the superclass.
 
 ## Polymorphism
 
-* Polymorphism is the ability to take more than one form. In OO programming, polymorphism refers to the ability of an object to provide different behaviors to its users depending on its state.
+- Polymorphism is the ability to take more than one form. In OO programming, polymorphism refers to the ability of an object to provide different behaviors to its users depending on its state.
 
 For example, suppose you have an array of three shapes: a `circle`, a `square`, and a `triangle`. Each shape has a method called `area()` that calculates the area of the shape. The `area()` method is polymorphic because it provides different behavior for each shape.
 
@@ -192,9 +189,9 @@ public class Main {
 
 ## Composition
 
-* Composition is the process of combining two or more objects into a more complex object. For example, a car is composed of an engine, a transmission, and a body.
+- Composition is the process of combining two or more objects into a more complex object. For example, a car is composed of an engine, a transmission, and a body.
 
-* Composition is often referred to as a *has-a* relationship. For example, a car has an engine, a transmission, and a body.
+- Composition is often referred to as a _has-a_ relationship. For example, a car has an engine, a transmission, and a body.
 
 Example of composition in java:
 
@@ -271,14 +268,13 @@ public class Main {
 
 Three important things you can do to develop a good sense of the OO thought process:
 
-
-* Knowing the difference between the interface and implementation
-* Thinking more abstractly
-* Giving the user the minimal interface possible
+- Knowing the difference between the interface and implementation
+- Thinking more abstractly
+- Giving the user the minimal interface possible
 
 ## Knowing the difference between the interface and implementation
 
-* The interface of a class is the set of public methods that it provides. The implementation is the code that is executed when each of those methods is called.
+- The interface of a class is the set of public methods that it provides. The implementation is the code that is executed when each of those methods is called.
 
 For an example, consider a real life car and a car object in java. The interface of a car is the steering wheel, the gas pedal, and the brake pedal. The implementation is the engine, the transmission, and the brakes mechanism.
 
@@ -295,7 +291,6 @@ As a rule of thumb, the interface to a class should contain only what the user n
 The implementation details are hidden from the user. One goal regarding the implementation should be kept in mind: A change to the implementation should not require a change to the user’s code.
 
 In the car example, the user should be able to drive the car regardless of whether the car has a gasoline engine or an electric motor. The user should be able to drive the car regardless of whether the car has a manual transmission or an automatic transmission. The user should be able to drive the car regardless of whether the car has disc brakes or drum brakes.
-
 
 ### Minimual interface
 
@@ -318,9 +313,9 @@ Give the users only what they absolutely need. In effect, this means the class h
 
 ## Constructors
 
-* A constructor is a special method that is called when an object is instantiated (i.e., created). The constructor is used to initialize the object.
+- A constructor is a special method that is called when an object is instantiated (i.e., created). The constructor is used to initialize the object.
 
-* A constructor has the same name as the class and no return type. If there is a return type, then the compiler will treat the constructor as a method.
+- A constructor has the same name as the class and no return type. If there is a return type, then the compiler will treat the constructor as a method.
 
 ```java
 // Constructor
@@ -336,7 +331,7 @@ public void Cabbie() {
 
 ### When is a constructor called?
 
-* A constructor is called when an object is instantiated (i.e., created). The constructor is used to initialize the object.
+- A constructor is called when an object is instantiated (i.e., created). The constructor is used to initialize the object.
 
 ```java
 Cabbie myCabbie = new Cabbie();
@@ -344,7 +339,7 @@ Cabbie myCabbie = new Cabbie();
 
 ### What is inside a constructor?
 
-* A constructor is used to initialize the object. The constructor is used to set the initial values of the object’s instance variables, for example, if you have a stopwatch object, you might want to initialize the stopwatch to zero.
+- A constructor is used to initialize the object. The constructor is used to set the initial values of the object’s instance variables, for example, if you have a stopwatch object, you might want to initialize the stopwatch to zero.
 
 ```java
 public class Stopwatch {
@@ -374,14 +369,13 @@ public Cabbie() {
 
 **Providing a Constructor**
 
-The rule of thumb is that you should always provide a constructor, even if you do not plan on doing anything inside it. You can provide a constructor with nothing in it and then add to it later. Although there is technically nothing wrong with using the default constructor provided by the compiler, it is always nice to know exactly what your code looks like. 
+The rule of thumb is that you should always provide a constructor, even if you do not plan on doing anything inside it. You can provide a constructor with nothing in it and then add to it later. Although there is technically nothing wrong with using the default constructor provided by the compiler, it is always nice to know exactly what your code looks like.
 
 It is not surprising that maintenance becomes an issue here. If you depend on the default constructor and then maintenance is performed on the class that added another constructor, then the default constrictor is not created. In short, the default constructor is only added if you don’t include one.As soon as you include just one, the default constructor is not included.
 
 ### Using multiple constructors
 
-* You can have more than one constructor in a class. This is called overloading the constructor. The constructors must have different signatures. The signature of a constructor is the number and type of the parameters. (Not the return type.)
-
+- You can have more than one constructor in a class. This is called overloading the constructor. The constructors must have different signatures. The signature of a constructor is the number and type of the parameters. (Not the return type.)
 
 ```java
 public class Cabbie {
@@ -402,7 +396,7 @@ public class Cabbie {
 
 ### Overloading methods
 
-* You can have more than one method in a class with the same name. This is called overloading the method. The methods must have different signatures. The signature of a method is the number and type of the parameters. (Not the return type.)
+- You can have more than one method in a class with the same name. This is called overloading the method. The methods must have different signatures. The signature of a method is the number and type of the parameters. (Not the return type.)
 
 ```java
 // different parameter list
@@ -413,18 +407,17 @@ public void getCab (int numberOfPassengers);
 
 ### The concept of scope
 
-* Scope refers to the visibility of a variable. A variable can be visible to the entire class, or it can be visible only to a method. The scope of a variable is determined by where it is declared.
+- Scope refers to the visibility of a variable. A variable can be visible to the entire class, or it can be visible only to a method. The scope of a variable is determined by where it is declared.
 
 the state of the object is represented by attributes.There are three types of attributes :
 
-* Local attributes
-* Object attributes
-* Class attributes
-
+- Local attributes
+- Object attributes
+- Class attributes
 
 ### Local attributes
 
-* Local attributes are declared inside a method and visible only to that method. Local attributes are not visible to any other method or class.
+- Local attributes are declared inside a method and visible only to that method. Local attributes are not visible to any other method or class.
 
 ```java
 public class Number {
@@ -489,7 +482,6 @@ public class Number {
 In this case, there are actually three totally separate memory locations with the name of count for each object.The object owns one copy, and `method1()` and `method2()` each
 have their own copy.
 
-
 To access the object variable from within one of the methods, say `method1()`, you can use a pointer called `this` in the C-based languages:
 
 ```java
@@ -505,16 +497,13 @@ Notice that there is some code that looks a bit curious:
 this.count = 1;
 ```
 
-
 The selection of the word `this` as a keyword is perhaps unfortunate. However, we must live with it.The use of the `this` keyword directs the compiler to access the object variable `count` and not the local variables within the method bodies.
 
-
-*Note*
+_Note_
 
 The keyword `this` is a reference to the current object.
 
 ### Class attributes
-
 
 As mentioned earlier, it is possible for two or more objects to share attributes. In Java, C#, and C++, you do this by making the attribute static:
 
@@ -552,21 +541,21 @@ However, you must be aware of potential synchronization problems.
 
 ## Operator Overloading
 
-* Operator overloading is a feature of some programming languages that allows the programmer to redefine the meaning of an operator when applied to operands of a user-defined type.
+- Operator overloading is a feature of some programming languages that allows the programmer to redefine the meaning of an operator when applied to operands of a user-defined type.
 
-* Operator overloading is syntactic sugar. It allows you to write code that is easier to read and understand.
+- Operator overloading is syntactic sugar. It allows you to write code that is easier to read and understand.
 
-* Operator overloading is supported in C++, however, it is not supported in Java or C#.
+- Operator overloading is supported in C++, however, it is not supported in Java or C#.
 
 For example, the `+` operator is used to add two numbers together. However, it can also be used to concatenate two strings together in java, java itself has overloaded the `+` operator, but it does not allow operator overloading.
 
-You may read more from here 
+You may read more from here
 
 https://stackoverflow.com/questions/3559563/why-doesnt-java-need-operator-overloading
 
 ## Multiple Inheritance
 
-* Multiple inheritance is a feature of some object-oriented computer programming languages in which an object or class can inherit characteristics and features from more than one parent object or parent class.
+- Multiple inheritance is a feature of some object-oriented computer programming languages in which an object or class can inherit characteristics and features from more than one parent object or parent class.
 
 In some OO languages, such as C++, you can.
 
@@ -583,7 +572,6 @@ https://stackoverflow.com/questions/2515477/why-is-there-no-multiple-inheritance
 From Effective C++:
 
 > The problem with complex data structures and objects is that they might contain references. Simply making a copy of the reference does not copy the data structures or the object that it references. In the same vein, when comparing objects, simply comparing a pointer to another pointer only compares the references—not what they point to.
-
 
 ### Deep copy vs shallow copy
 
@@ -663,9 +651,9 @@ Comments are important. They are the only way to document the code. The comments
 
 There are three types of comments:
 
-* Block comments `/* */`
-* Line comments `//`
-* Javadoc comments `/** */`
+- Block comments `/* */`
+- Line comments `//`
+- Javadoc comments `/** */`
 
 I like this video, it explains why you shouldn't comment your code, and when two use comments
 
@@ -677,10 +665,10 @@ Attributes are the variables that are associated with the class, they represent 
 
 Note the keword `private` before the attributes, this is called access modifier, it specifies the visibility of the attribute. There are four access modifiers in Java:
 
-* `public` - The attribute is visible to all classes.
-* `private` - The attribute is visible only to the class that declares it. 
-* `protected` - The attribute is visible to the class that declares it and to any subclasses and subpackage.
-* `default` - The attribute is visible to the class that declares it and to any classes in the same package.
+- `public` - The attribute is visible to all classes.
+- `private` - The attribute is visible only to the class that declares it.
+- `protected` - The attribute is visible to the class that declares it and to any subclasses and subpackage.
+- `default` - The attribute is visible to the class that declares it and to any classes in the same package.
 
 `public` vs `private` vs `protected` vs `default`:
 
@@ -689,7 +677,6 @@ https://stackoverflow.com/questions/215497/in-java-what-is-the-difference-betwee
 Also note the keyword `static` before the attribute, this is called class attribute, it is associated with the class itself, not with any object. There is only one copy of a class attribute, regardless of how many objects are created from the class. Class attributes are declared with the keyword `static`. A case where you might use a class attribute is when you want to keep track of the number of objects that have been created from the class, so whenever the constructor is called, you increment the class attribute.
 
 > **Hide as Much Data as Possible** All the attributes in this example are private. This is in keeping with the design principle of keeping the interface design as minimal as possible. The only way to access these attributes is through the method interfaces provided (which we explore later in this chapter).
-
 
 ## Constructors
 
@@ -742,3 +729,169 @@ private String encrypt(string password) {
     // code to encrypt the password
 }
 ```
+
+# Chapter 5 - Class Design Guidelines
+
+## Modeling Real World Systems
+
+## Ideyntifying the Public Interfaces
+
+The goal is to keep the public interface to a minimum.
+
+“the interface of a well-designed object describes the services that the client wants accomplished.” If a class does not provide a useful service to a user, it should not have been built in the first place.
+
+### The Minimum Public Interface
+
+Providing the minimum public interface makes the class as concise as possible. The goal is to provide the user with the exact interface to do the job right. No more, no less.
+
+### Hiding the Implementation
+
+## Designing Robust Constructors (and Perhaps Destructors)
+
+Constructor should put an object into an initial, safe state. This includes issues such as attribute initialization and memory management. You also need to make sure the object is constructed properly in the default condition. It is normally a good idea to provide a constructor to handle this default situation.
+
+### Designing Error Handling Into a Class
+
+It is not a good idea to ignore potential errors. It is better to design error handling into the class.
+
+The general rule that the application should never crash. If an error occurs, the application should fix it and continue, or at minimum, exit gracefully without losing anydata.
+
+### Documenting a Class Using Comments
+
+You must have heard the blablabla hundreds of time, but watch [this](https://youtu.be/Bf7vDBBOBUA)
+
+Good design is practically impossible without good documentation practices
+
+### Building Objects with the Intent to Cooperate
+
+We can safely say that almost no class lives in isolation. In most cases, there is little reason to build a class if it is not going to interact with other classes, unless the class will be used only once. This is a fact in the life of a class. A class will service other classes; it will request the services of other classes, or both.
+
+When designing a class, make sure you are aware of how other objects will interact with it.
+
+## Designing With Reuse in Mind
+
+## Designing With Extensibility in Mind
+
+What Attributes and Methods Can Be Static?
+
+Static methods promote strong coupling to classes. You cannot abstract a static method. You cannot mock a static method or static class. You cannot provide a static interface. The only time it is reasonable to use static classes (within application development—framework development is a bit different) is if you're working with some sort of helper class or extension method that does not produce side effects. For example, _a static class to add numbers is fine. A static class that interacts with a database or a web service is not._
+
+### Make Names Descriptive
+
+And be consistent.
+
+### Abstract Out Nonportable Code
+
+If you are designing a system that must use nonportable (native) code (that is, the code will run only on a specific hardware platform), you should abstract this code out of the class.
+
+For example, instead of memorizing that to make windows beep you need to `System.out.println("\007");` you can create a class that does that for you, and you can call it `Beep` or `Bell` or whatever you want. This way, if you need to change the way you make the beep, you only need to change it in one place.
+
+```java
+public class Beep {
+    public static void beep() {
+        System.out.println("\007");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Beep.beep();
+    }
+}
+```
+
+### Providing a Way to Copy and Compare Objects
+
+Chapter 3 discussed the issue of copying and comparing objects. It is important to understand how objects are copied and compared. You might not want, or expect, a simple bitwise copy or compare operation. You must make sure that your class behaves as expected, and this means you have to spend some time designing how objects are copied and compared.
+
+### Keeping the Scope as Small as Possible
+
+Keeping the scope as small as possible goes hand-in-hand with abstraction and hiding the implementation. The idea is to localize attributes and behaviors as much as possible. In this way, maintaining, testing, and extending a class are much easier. Using interfaces is a great way to enforce this.
+
+For example, instead of doing this:
+
+```java
+public class Math {
+    int temp = 0;
+    public void swap(int a, int b) {
+        temp = a;
+        a = b;
+        b = temp;
+    }
+}
+```
+
+You can do this:
+
+```java
+public class Math {
+    public void swap(int a, int b) {
+        int temp = a;
+        a = b;
+        b = temp;
+    }
+}
+```
+
+## Designing With Maintainability in Mind
+
+One way to promote maintainability is to reduce interdependent code—that is, changes in one class have no impact or minimal impact on other classes.
+
+> Highly coupled Classes
+> Classes that are highly dependent on one another are considered highly coupled. Thus, if a change made to one class forces a change to another class, these two classes are considered highly coupled. Classes that have no such dependencies have a very low degree of coupling.
+
+### Using Iteration in the Development Process
+
+Don’t write all the code at once! Create the code in small increments and then build and test it at each step. A good testing plan quickly uncovers any areas where insufficient interfaces are provided.
+
+### Testing the Interface
+
+The minimal implementations of the interface are often called _stubs_. By using _stubs_, you can test the interfaces without writing any real code. In the following example, rather than connecting to an actual database, _stubs_ are used to verify that the interfaces are working properly (from the user’s perspective—remember that interfaces are meant for the user). Thus, the implementation is not necessary at this point. In fact, it might cost valuable time and energy to complete the implementation yet because the design of the interface will affect the implementation, and the interface is not yet complete.
+
+Here is a code example that uses an internal array to simulate a working database:
+
+```java
+public class DataBaseReader {
+    private String db[] = { "Record1","Record2","Record3","Record4","Record5"};
+    private booleanDBOpen = false;
+    private int pos;
+    public void open(String Name){
+        DBOpen = true;
+    }
+    public void close(){
+        DBOpen = false;
+    }
+    public void goToFirst(){
+        pos = 0;
+    }
+    public void goToLast(){
+        pos = db.length - 1;
+    }
+    public int howManyRecords(){
+        int numOfRecords = db.length;
+        return numOfRecords;
+    }
+    public String getRecord(int key){
+    /* DB Specific Implementation */
+    return db[key];
+    }
+    public String getNextRecord(){
+    /* DB Specific Implementation */
+    return db[pos++];
+    }
+}
+```
+
+## Using Object Persistence
+
+Persistence the concept of maintaining the state of an object. When you run a program, if you don’t save the object in some manner, the object dies, never to be recovered. These transient objects might work in some applications, but in most business systems, the state of the object must be saved for later use.
+
+The object may be serialized and saved to :
+
+- Flat files
+- Relational databases
+- NoSQL databases
+
+Serialization is the process of translating a data structure or object state into a format that can be stored or transmitted and reconstructed later.
+
+Serialization and deserialization must use the same specifications. It is sort of like an encryption algorithm. If one object encrypts a string, the object that wants to decrypt it must use the same encryption algorithm.
