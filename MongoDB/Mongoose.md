@@ -1,12 +1,6 @@
 # Mongoose Cheat Sheet
 
-<svg fill="none" viewBox="0 0 600 300" width="600" height="300" xmlns="http://www.w3.org/2000/svg">
-  <foreignObject width="100%" height="100%">
-<div class="mongoose"
-style="letter-spacing: -14px;font-size: 146px;font-weight: 100;text-indent: -23px;color: #800;font-family: 'Helvetica Nueue', Helvetica, Arial, FreeSans, sans-serif;text-rendering: geometricPrecision;text-transform: lowercase;align-items: center;justify-content: center;display: flex;">Mongoose</div>
-  </foreignObject>
-</svg>
-
+![Mongoose Logo](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F99177233598415E22A)
 
 Mongoose is a MongoDB object modeling tool. It is used to translate between objects in code and the representation of those objects in MongoDB.
 
