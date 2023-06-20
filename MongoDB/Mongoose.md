@@ -1,6 +1,6 @@
 # Mongoose Cheat Sheet
 
-![Mongoose Logo](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F99177233598415E22A)
+![Mongoose Logo](assets/mongooses-logo.png)
 
 Mongoose is a MongoDB object modeling tool. It is used to translate between objects in code and the representation of those objects in MongoDB.
 
