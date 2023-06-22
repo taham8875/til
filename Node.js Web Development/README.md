@@ -46,7 +46,7 @@ Node.js has a single execution thread. If the goal is to avoid the complexity of
 ## Asynchronous requests in Node.js
 
 ```javascript
-queryDatabase('SELECT * FROM users WHERE id = 1', function (err, result) {
+queryDatabase("SELECT * FROM users WHERE id = 1", function (err, result) {
   if (err) {
     console.error(err);
     return;
@@ -60,7 +60,7 @@ The programmer supplies a function that is called (hence the name callback funct
 Advances in the JavaScript language have given us new options. When used with ES2015 promises, the equivalent code would look like this:
 
 ```javascript
-queryDatabase('SELECT * FROM users WHERE id = 1')
+queryDatabase("SELECT * FROM users WHERE id = 1")
   .then(function (result) {
     console.log(result);
   })
@@ -73,7 +73,7 @@ The big advance came with the ES-2017 async function:
 
 ```javascript
 try {
-  const result = await queryDatabase('SELECT * FROM users WHERE id = 1');
+  const result = await queryDatabase("SELECT * FROM users WHERE id = 1");
   console.log(result);
 } catch (err) {
   console.error(err);
@@ -103,7 +103,6 @@ Embedding this function into an HTTP server, we can see that for bigger `n` (e.g
 
 Does this mean that Node.js is a flawed platform? No, it just means that the programmer must take care to identify code with long-running computations and develop solutions. These include rewriting the algorithm to work with the event loop, rewriting the algorithm for efficiency, integrating a native code library, or foisting computationally expensive calculations to a backend server.
 
-
 ## Embracing advances in the JavaScript language
 
 Javascript frontend developers usually unable to use the latest JavaScript language features because of the need to support older browsers like old ie browsers, they need to use tools like Bable to transpile the code to older JavaScript versions.
@@ -116,14 +115,13 @@ TypeScript is a superset of JavaScript that adds static typing and other feature
 
 TypeScript ease the pain of using javascript in large and complex projects, strong type checking and other features help to catch errors early in the development process.
 
-
 ## Developing microservices or maxiservices with Node.js
 
 Microservices are a way of designing applications as a collection of small services, each of which runs its own process and communicates with lightweight mechanisms, often an HTTP resource API. Each microservice is a separate process that can be deployed, upgraded, and scaled independently.
 
 Instead of building a single monolithic application, we can build a collection of microservices that work together to provide the same functionality.
 
-Some advantages of microservices are as follows: 
+Some advantages of microservices are as follows:
 
 - Each microservice can be managed by a small team.
 - Each team can work on its own schedule, so long as the service API compatibility is maintained.
@@ -133,7 +131,93 @@ Some advantages of microservices are as follows:
 
 Where does Node.js fit in with this? Its design fits the microservice :
 
-- Node.js encourages small, tightly focused, single-purpose modules. 
-- These modules are composed into an application by the excellent npm package management system. 
+- Node.js encourages small, tightly focused, single-purpose modules.
+- These modules are composed into an application by the excellent npm package management system.
 - Publishing modules is incredibly simple, whether via the NPM repository or a Git URL.
 - While an app framework such as Express can be used with large services, it works very well for small lightweight services and supports easy, simple deployment.
+
+# Chapter 2: Setting up Node.js
+
+## Installing Node.js
+
+Node js : https://nodejs.org/en/download
+
+Editor : https://code.visualstudio.com/
+
+to check if node is installed, run the following command in terminal
+
+```bash
+$ node -v
+v18.15.0
+```
+
+To get the help for node, run the following command in terminal
+
+```bash
+$ node --help
+```
+
+To open the interactive node shell, run the following command in terminal
+
+```bash
+$ node
+Welcome to Node.js v18.15.0.
+Type ".help" for more information.
+> console.log('Hello Node')
+Hello Node
+undefined
+```
+
+To exit the interactive node shell, either press `ctrl+c` twice or type `.exit` and press enter.
+
+## Running a simple script with Node.js
+
+Create a file called `ls.js` , which will list the files in the current directory like the `ls` command in linux dose.
+
+```javascript
+const fs = require("fs").promises;
+async function listFiles() {
+  try {
+    const files = await fs.readdir(".");
+    for (const file of files) {
+      console.log(file);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+listFiles();
+```
+
+To run the script, run the following command in terminal
+
+```bash
+$ node ls.js
+```
+
+> For the sake of learning, I will use TypeScript in the rest of the document, but you can use JavaScript if you prefer to be consistent with the book.
+
+```ts
+import fs from "fs/promises";
+
+async function ls(): Promise<void> {
+  try {
+    const files: string[] = await fs.readdir(".");
+    files.forEach((file) => process.stdout.write(`${file}   `));
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+ls();
+```
+
+To run the script, run the following command in terminal
+
+```bash
+$ ts-node ls.ts
+```
+
+[`ts-node`](https://github.com/TypeStrong/ts-node) is a TypeScript execution engine and REPL for Node.js.
+
+> By default, the fs module functions use the callback paradigm originally created for Node.js. As a result, most Node.js modules use the callback paradigm. Within `async` functions, it is more convenient if functions return Promises instead so that the `await` keyword can be used. The `util` module provides a function, `util.promisify`, which generates a wrapper function for old-style callback-oriented functions so it instead returns a Promise.
