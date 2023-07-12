@@ -254,11 +254,11 @@ const { isLoading, data, isError, error } = useQuery({
 
 `staleTime` is another properties that you can pass to the `useQuery` hook.
 
-You may need to read [this](https://stackoverflow.com/questions/72828361/what-are-staletime-and-cachetime-in-react-query) for better understanding of the difference between `chaheTime` and `staleTime`.
+You may need to read [this](https://stackoverflow.com/questions/72828361/what-are-staletime-and-cachetime-in-react-query) for better understanding of the difference between `cacheTime` and `staleTime`.
 
-`StaleTime`: The duration until a query transitions from fresh to stale. As long as the query is fresh, data will always be read from the cache only - no network request will happen! If the query is stale (which per default is: instantly (0 seconds)), you will still get data from the cache, but a background refetch can happen under certain conditions.
+`staleTime`: The duration until a query transitions from fresh to stale. As long as the query is fresh, data will always be read from the cache only - no network request will happen! If the query is stale (which per default is: instantly (0 seconds)), you will still get data from the cache, but a background refetch can happen under certain conditions.
 
-`CacheTime`: The duration until inactive queries will be removed from the cache. This defaults to 5 minutes. Queries transition to the inactive state as soon as there are no observers registered, so when all components which use that query have unmounted.
+`cacheTime`: The duration until inactive queries will be removed from the cache. This defaults to 5 minutes. Queries transition to the inactive state as soon as there are no observers registered, so when all components which use that query have unmounted.
 
 ## Fetch on Button Click
 
@@ -372,7 +372,7 @@ export const RQSuperHeroesPage = () => {
 
 ## Custom Query Hook
 
-After configuring the `useQuery` hook, you can create a custom hook to reuse this configuration instead of reapeating it in every component.
+After configuring the `useQuery` hook, you can create a custom hook to reuse this configuration instead of repeating it in every component.
 
 create a new folder called `hooks` and create a new file called `useSuperHeroesData.ts`, move the logic from the `RQSuperHeroesPage` component to the `useSuperHeroesData` hook.
 
@@ -493,3 +493,514 @@ export const RQSuperHeroesPage = () => {
   )
 }
 ```
+
+## Parallel Queries
+
+Execute multiple queries in parallel is as simple as calling the `useQuery` hook multiple times.
+
+lets create a new component called `RQParallelQueriesPage` and add a new route for it.
+
+```tsx
+import { useQuery } from "react-query";
+import axios from "axios";
+
+const fetchSuperHeroes = () => {
+  return axios.get("http://localhost:3001/superheroes");
+};
+
+const fetchVillains = () => {
+  return axios.get("http://localhost:3001/villains");
+};
+
+export const RQParallelQueriesPage = () => {
+  const { isLoading: isLoadingHeroes, data: heroes } = useQuery(
+    "super-heroes",
+    fetchSuperHeroes
+  );
+
+  const { isLoading: isLoadingVillains, data: villains } = useQuery(
+    "villains",
+    fetchVillains
+  );
+
+  if (isLoadingHeroes || isLoadingVillains) {
+    return <h2>Loading...</h2>;
+  }
+
+  return (
+    <>
+      <h2>RQ Parallel Queries Page</h2>
+      <h3>Super Heroes</h3>
+      <ul>
+        {heroes?.data.map((superHero: any) => (
+          <li key={superHero["id"]}>
+            {superHero["name"]} - {superHero["alterEgo"]}
+          </li>
+        ))}
+      </ul>
+      <h3>Villains</h3>
+      <ul>
+        {villains?.data.map((villain: any) => (
+          <li key={villain["id"]}>
+            {villain["name"]} - {villain["alterEgo"]}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+```
+
+Note how we used aliases to avoid naming conflicts between the two queries.
+
+## Dynamic Parallel Queries
+
+You can also execute multiple queries in parallel dynamically, for example if you have a list of products and you want to fetch the details of each product.
+
+Let's create a new component called `RQDynamicParallelQueriesPage` and add a new route for it.
+
+```tsx
+import { useQueries } from "react-query";
+import axios from "axios";
+
+const fetchSuperHero = ({ queryKey }) => {
+  const heroId = queryKey[1];
+  return axios.get(`http://localhost:3001/superheroes/${heroId}`);
+};
+
+export const RQDynamicParallelQueriesPage = () => {
+  const heroesIds = [1, 2, 3, 4, 5];
+  const heroesQueries = useQueries(
+    heroesIds.map((heroId) => {
+      return {
+        queryKey: ["super-hero", heroId],
+        queryFn: () => fetchSuperHero(heroId),
+      };
+    })
+  );
+
+  return (
+    <>
+      <h2>RQ Dynamic Parallel Queries Page</h2>
+      <ul>
+        {heroesQueries.map((heroQuery: any) => (
+          <li key={heroQuery.data?.data.id}>
+            {heroQuery.data?.data.name} - {heroQuery.data?.data.alterEgo}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+```
+
+## Dependent Queries
+
+You can also execute queries that depend on the result of another query. (execute sequentially, not in parallel).
+
+Let's create a new component called `RQDependentQueriesPage` and add a new route for it.
+
+```tsx
+import { useQuery } from "react-query";
+import axios from "axios";
+
+const fetchSuperHero = ({ queryKey }) => {
+  const heroId = queryKey[1];
+  return axios.get(`http://localhost:3001/superheroes/${heroId}`);
+};
+
+const fetchSuperHeroBestFriend = ({ queryKey }) => {
+  const friendId = queryKey[1];
+  return axios.get(`http://localhost:3001/best-friend/${friendId}`);
+};
+
+export const RQDependentQueriesPage = () => {
+  const { data: superHero } = useQuery(["super-hero", 1], fetchSuperHero);
+
+  const friendId = superHero?.data?.bestFriendId;
+  const { data: bestFriend } = useQuery(
+    ["best-friend", friendId],
+    fetchSuperHeroBestFriend,
+    {
+      enabled: !!friendId,
+    }
+  );
+
+  console.log("superHero", superHero);
+  console.log("bestFriend", bestFriend);
+
+  return <div> RQ Dependent Queries Page </div>;
+};
+```
+
+## Initial Queries Data
+
+You can pass initial data to the `useQuery` hook, this is useful when you want to show some data while the query is loading.
+
+We need to access the `queryClient` instance (provided to the entire app component) to pass the initial data.
+
+Let's modify our `useSuperHeroData` hook to accept initial data.
+
+```tsx
+import { useQuery, useQueryClient } from "react-query";
+import axios from "axios";
+
+const fetchSuperHero = ({ queryKey }) => {
+  const heroId = queryKey[1];
+  return axios.get(`http://localhost:3001/superheroes/${heroId}`);
+};
+
+export const useSuperHeroData = (heroId, initialData) => {
+  const queryClient = useQueryClient();
+  return useQuery(["super-hero", heroId], fetchSuperHero, {
+    initialData: () => {
+      return (
+        queryClient
+          .getQueryData(["super-hero"])
+          ?.data.find((hero: any) => hero.id === heroId) || undefined
+      );
+    },
+  });
+};
+```
+
+## Pagination
+
+To work on pagination we need to add a new array of objects to our json-server (`db.json`)
+
+```json
+"colors" : [
+    {
+      "id": 1,
+      "name": "red"
+    },
+    {
+      "id": 2,
+      "name": "blue"
+    },
+    {
+      "id": 3,
+      "name": "green"
+    },
+    {
+      "id": 4,
+      "name": "yellow"
+    },
+    {
+      "id": 5,
+      "name": "black"
+    },
+    {
+      "id": 6,
+      "name": "white"
+    }
+  ]
+```
+
+Let's create a new component called `RQPaginationPage` and add a new route for it.
+
+```tsx
+import { useQuery } from "react-query";
+import axios from "axios";
+
+const fetchColors = () => {
+  return axios.get(`http://localhost:3001/colors`);
+};
+
+export const RQPaginationPage = () => {
+  const { isLoading, isError, data, error } = useQuery("colors", fetchColors);
+
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
+
+  if (isError) {
+    return <h2>Error: {error.message}</h2>;
+  }
+
+  return (
+    <>
+      <h2>RQ Pagination Page</h2>
+      <ul>
+        {data?.data.map((color: any) => (
+          <li key={color["id"]}>{color["name"]}</li>
+        ))}
+      </ul>
+    </>
+  );
+};
+```
+
+Note that json-server supports pagination out of the box, you can pass the `page` and `limit` query params to the request.
+
+`https://localhost:3001/colors?_limit=3&_page=1`
+
+- `_limit` is the number of items per page
+- `_page` is the page number
+
+So let's use these query params to implement pagination.
+
+```tsx
+import { useState } from "react";
+import { useQuery } from "react-query";
+import axios from "axios";
+
+const fetchColors = ({ queryKey }) => {
+  const pageNumber = queryKey[1];
+  // limit is hardcoded to 1 for this example
+  return axios.get(`http://localhost:3001/colors?_limit=1&_page=${pageNumber}`);
+};
+
+export const RQPaginationPage = () => {
+  const [pageNumber, setPageNumber] = useState(1); // keep track of the current page number
+
+  const { isLoading, isError, data, error } = useQuery(
+    ["colors", pageNumber],
+    fetchColors,
+    {
+      keepPreviousData: true, // keep previous data while fetching the next page
+    }
+  );
+
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
+
+  if (isError) {
+    return <h2>Error: {error.message}</h2>;
+  }
+
+  return (
+    <>
+      <h2>RQ Pagination Page</h2>
+      <ul>
+        {data?.data.map((color: any) => (
+          <li key={color["id"]}>{color["name"]}</li>
+        ))}
+      </ul>
+      {/* 
+      Add the previous and next page buttons
+      
+      disable the previous page button if we are on the first page */}
+      <button
+        onClick={() => {
+          setPageNumber((prevPageNumber) => prevPageNumber - 1);
+        }}
+        disabled={pageNumber === 1}
+      >
+        Previous Page
+      </button>
+      <button
+        onClick={() => {
+          setPageNumber((prevPageNumber) => prevPageNumber + 1);
+        }}
+      >
+        Next Page
+      </button>
+
+      <p>Page Number: {pageNumber}</p>
+    </>
+  );
+};
+```
+
+## Infinite Queries
+
+To work on infinite queries we need to add a new array of objects to our json-server (`db.json`)
+
+```json
+
+```
+
+Let's create a new component called `RQInfiniteQueriesPage` and add a new route for it.
+
+```tsx
+import { useQuery, useInfiniteQuery } from "react-query"; // import useInfiniteQuery
+import axios from "axios";
+import { Fragment } from "react";
+
+// useInfiniteQuery provides the fetchColors function with a pageParam argument
+const fetchColors = ({ pageParam = 1 }) => {
+  return axios.get(`http://localhost:3001/colors?_limit=2&_page=${pageParam}`);
+};
+
+export const RQInfiniteQueriesPage = () => {
+  const {
+    isLoading,
+    isError,
+    data,
+    error,
+    fetchNextPage, // fetchNextPage function
+    hasNextPage, // boolean to check if there is a next page
+    isFetched,
+    isFetchingNextPage,
+  } = useInfiniteQuery(["colors"], fetchColors, {
+    getNextPageParam: (_lastPage, pages) => {
+      // this should not be hardcoded, but json server doesn't support the functionality to know the total number of pages
+      if (pages.length < 10) {
+        return pages.length + 1;
+      } else {
+        return undefined;
+      }
+    },
+  });
+
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
+
+  if (isError) {
+    return <h2>Error: {error.message}</h2>;
+  }
+
+  return (
+    <>
+      <h2>RQ Infinite Queries Page</h2>
+      <ul>
+        {data?.pages.map((group, i) => (
+          <Fragment key={i}>
+            {group.data.map((color: any) => (
+              <li key={color["id"]}>{color["name"]}</li>
+            ))}
+          </Fragment>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => {
+          fetchNextPage();
+        }}
+        disabled={!hasNextPage}
+      >
+        {isFetchingNextPage
+          ? "Loading more..."
+          : hasNextPage
+          ? "Load More"
+          : "Nothing more to load"}
+      </button>
+      <p>Is Fetched: {isFetched.toString()}</p>
+    </>
+  );
+};
+```
+
+## Mutations
+
+Let's learn how to make a post request using react query
+
+let's create a new component called `RQMutationsPage` , in this component we will create a form to add a new super hero to our json-server.
+
+```tsx
+import { useState } from "react";
+import { useMutation } from "react-query";
+import axios from "axios";
+
+const addSuperHero = (superHero) => {
+  return axios.post(`http://localhost:3001/superheroes`, superHero);
+};
+
+export const RQMutationsPage = () => {
+  const [name, setName] = useState("");
+  const [alterEgo, setAlterEgo] = useState("");
+
+  const { mutate, isLoading, isError, error, isSuccess } =
+    useMutation(addSuperHero);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutate({
+      id: crypto.randomUUID(),
+      name,
+      alterEgo,
+    });
+  };
+
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
+
+  if (isError) {
+    return <h2>Error: {error.message}</h2>;
+  }
+
+  if (isSuccess) {
+    return <h2>Super Hero Added Successfully</h2>;
+  }
+
+  return (
+    <>
+      <h2>RQ Mutations Page</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Super Power"
+          value={alterEgo}
+          onChange={(e) => setAlterEgo(e.target.value)}
+        />
+        <button type="submit">Add Super Hero</button>
+      </form>
+    </>
+  );
+};
+```
+
+## Query Invalidation
+
+Imagine if the form of creating a new hero and hero list are in the same page, we want to invalidate the query of the hero list after adding a new hero.
+
+```tsx
+import { useMutation, useQueryClient } from "react-query";
+
+// ...
+
+export const RQMutationsPage = () => {
+  const queryClient = useQueryClient();
+  // ...
+
+  const { mutate, isLoading, isError, error, isSuccess } = useMutation(
+    addSuperHero,
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("super-heroes");
+      },
+    }
+  );
+
+  // ...
+};
+```
+
+## Handling Mutation Responses
+
+Now when we add a new hero the browser creates `POST` request followed by a `GET` request to fetch the new data, it is a common practice to for the server to return the new data after a successful `POST` request, so we don't have to make a new `GET` request.
+
+So how to get the response of the mutation
+
+```tsx
+// ...
+
+const { mutate, isLoading, isError, error, isSuccess } = useMutation(
+  addSuperHero,
+  {
+    onSuccess: (data) => {
+      // queryClient.invalidateQueries("super-heroes");
+      queryClient.setQueryData("super-heroes", (oldQueryData: any) => {
+        return {
+          ...oldQueryData,
+          data: [...oldQueryData.data, data.data],
+        };
+      });
+    },
+  }
+);
+
+// ...
+```
+
+A little bit more code but saves you from making an additional request.
