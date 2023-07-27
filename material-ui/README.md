@@ -972,3 +972,309 @@ export default function BasicGrid() {
 ```
 
 Try to check the documentation and play around with the props.
+
+# Paper
+
+The Paper component is a layout component that allows you to create a surface to display content.
+
+## Basic Paper
+
+To create a basic paper, you can use the `Paper` component.
+
+```tsx
+import { Paper } from "@mui/material";
+
+export default function BasicPaper() {
+  return (
+    <Paper sx={{ padding: "1rem" }} elevation={3}>
+      <Box>Hello World</Box>
+    </Paper>
+  );
+}
+```
+
+# Card
+
+The Card component contains content and actions about a single subject.
+
+## Basic Card
+
+To create a basic card, you can use the `Card` component.
+
+```tsx
+import { Card, CardContent, CardActions, Button, CardMedia } from "@mui/material";
+
+export default function BasicCard() {
+  return (
+    <Card>
+      <CardMedia
+        component="img"
+        height="100"
+        image="https://source.unsplash.com/random"
+      />
+      <CardContent>
+        <Typography variant="h5" component="div">
+          Card 1
+        </Typography>
+        <Typography variant="body2">
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Autem totam
+          unde, quae magni voluptas debitis quia animi soluta necessitatibus
+          tempore libero est asperiores voluptatibus esse eum quibusdam?
+          Pariatur, voluptas excepturi?
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button variant="text">Action 1</Button>
+        <Button variant="text">Action 2</Button>
+      </CardActions>
+    </CardM>
+  );
+}
+```
+
+Note that the card component is build on top of the paper component.
+
+# Accordion
+
+The Accordion component is a layout component that allows you to create a collapsible content.
+
+## Basic Accordion
+
+To create a basic accordion, you can use the `Accordion` component.
+
+```tsx
+import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+export default function BasicAccordion() {
+  return (
+    <Accordion>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel1a-content"
+        id="panel1a-header"
+      >
+        <Typography sx={{ color: "text.secondary" }}>
+          I am an accordion
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Typography>
+          Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat.
+          Aliquam eget maximus est, id dignissim quam.
+        </Typography>
+      </AccordionDetails>
+    </Accordion>
+  );
+}
+```
+
+Try to add more accordions and play around with the props. A common practice is to make tge user able to open only one accordion at a time. Try to do this with `useState` hook, `expanded` and `onChange` prop.
+
+# Navbar
+
+To create a navbar with material ui, you can use the `AppBar` and `Toolbar` components.
+
+```tsx
+import { AppBar, Toolbar, Typography } from "@mui/material";
+
+import AcUnitIcon from "@mui/icons-material/AcUnit";
+
+export default function BasicNavbar() {
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        <IconButton
+          size="large"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{ mr: 2 }}
+        >
+          <AcUnitIcon />
+        </IconButton>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          News
+        </Typography>
+        <Button color="inherit">Login</Button>
+        <Button color="inherit">About</Button>
+        <Button color="inherit">Contact</Button>
+        <Button color="inherit">Career</Button>
+      </Toolbar>
+    </AppBar>
+  );
+}
+```
+
+# Menu
+
+To add a menu to the navbar, you can use the `Menu` component.
+
+```tsx
+import { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Button,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+
+import AcUnitIcon from "@mui/icons-material/AcUnit";
+
+export default function BasicNavbar() {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  console.log("anchorEl", anchorEl);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  return (
+    <AppBar position="static" color="transparent">
+      <Toolbar>
+        <IconButton size="large" edge="start" color="inherit" aria-label="logo">
+          <AcUnitIcon />
+        </IconButton>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          Navbar
+        </Typography>
+        <Stack direction="row" spacing={2}>
+          <Button color="inherit">Features</Button>
+          <Button color="inherit">Pricing</Button>
+          <Button color="inherit">About</Button>
+          <Button
+            color="inherit"
+            id="resources-button"
+            aria-controls={open ? "resources-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            endIcon={<KeyboardArrowDownIcon />}
+            onClick={handleClick}
+          >
+            Resources
+          </Button>
+          <Button color="inherit">Login</Button>
+        </Stack>
+        <Menu
+          id="resources-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          MenuListProps={{
+            "aria-labelledby": "resources-button",
+          }}
+        >
+          <MenuItem onClick={handleClose}>Blog</MenuItem>
+          <MenuItem onClick={handleClose}>Podcast</MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
+  );
+}
+```
+
+# Link
+
+As the name suggests, the `Link` component is used to create links.
+
+```tsx
+import { Link } from "@mui/material";
+
+export default function BasicLink() {
+  return (
+    <Link href="#" underline="hover">
+      Link
+    </Link>
+  );
+}
+```
+
+`underline` prop can have on of the following values: `none`, `hover`, `always`.
+
+`Link` component inherits the style from the parent `Typography` component if exists. So, if you want to change the size of the link, you can do it by changing the size of the parent `Typography` component.
+
+```tsx
+<Typography variant="h1">
+  <Link href="#" underline="hover">
+    Link
+  </Link>
+</Typography>
+```
+
+or directly
+
+```tsx
+<Link href="#" variant="h1" underline="hover">
+  Link
+</Link>
+```
+
+# Drawer
+
+The `Drawer` component is used to create a sidebar.
+
+```tsx
+import { useState } from "react";
+
+import {
+  Drawer,
+  List,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  ListItemButton,
+} from "@mui/material";
+
+import MenuIcon from "@mui/icons-material/Menu";
+
+import MailIcon from "@mui/icons-material/Mail";
+
+export default function BasicDrawer() {
+  const [open, setOpen] = useState(false);
+  const toggleDrawer = () => {
+    setOpen(!open);
+  };
+  return (
+    <>
+      <IconButton
+        size="large"
+        edge="start"
+        color="inherit"
+        aria-label="menu"
+        sx={{ mr: 2, ml: 2 }}
+        onClick={toggleDrawer}
+      >
+        <MenuIcon />
+      </IconButton>
+      <Drawer anchor="left" open={open} onClose={toggleDrawer}>
+        <List>
+          {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
+            <ListItemButton key={text}>
+              <ListItemIcon>
+                <MailIcon />
+              </ListItemIcon>
+              <ListItemText primary={text} />
+            </ListItemButton>
+          ))}
+        </List>
+      </Drawer>
+    </>
+  );
+}
+```
+
+You can  change the `anchor` prop to `right`, `left`, `top` or `bottom` to change the position of the sidebar.
