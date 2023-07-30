@@ -1277,4 +1277,57 @@ export default function BasicDrawer() {
 }
 ```
 
-You can  change the `anchor` prop to `right`, `left`, `top` or `bottom` to change the position of the sidebar.
+You can change the `anchor` prop to `right`, `left`, `top` or `bottom` to change the position of the sidebar.
+
+# Customizing Theme
+
+To see the default theme, click [here](https://mui.com/material-ui/customization/default-theme/).
+
+To customize the theme, you can use the `createTheme` function.
+
+```tsx
+import { createTheme } from "@mui/material/styles";
+
+// create theme input must match the original theme type
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#ff0000",
+    },
+  },
+});
+```
+
+To use the custom theme, you can use the `ThemeProvider` component and wrap the entire app with it.
+
+```tsx
+import { ThemeProvider } from "@mui/material/styles";
+
+// ...
+<ThemeProvider theme={theme}>
+  <App />
+</ThemeProvider>;
+```
+
+Now open your browser to see the app running with the new red theme.
+
+# Customizing Components
+
+To customize a component, you can use the `styled` function.
+
+```tsx
+import { styled } from "@mui/material/styles";
+
+const MyButton = styled(Button)(({ theme }) => ({
+  color: theme.palette.secondary.main,
+  backgroundColor: theme.palette.primary.main,
+  "&:hover": {
+    backgroundColor: theme.palette.primary.dark,
+  },
+  borderRadius: 0,
+}));
+
+export default function BasicStyled() {
+  return <MyButton>My Button</MyButton>;
+}
+```
