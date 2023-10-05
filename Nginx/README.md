@@ -82,7 +82,7 @@ $ nginx
 
 6. Now navigate to `http://localhost:80` and you should see the following page:
 
-![nginx](nginx-welcome-page.png)
+![nginx](nginx-first-example.png)
 
 > If you failed to see the page, it is likely that nginx is running and you need to restart it. via `nginx -s stop` and `nginx`, if it is still not running, check the errors logs located in `logs/error.log`, (for me, using `\` instead of `/` in the `root` directive caused the problem)
 
