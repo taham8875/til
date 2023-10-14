@@ -218,3 +218,116 @@ location /about {
 ```
 
 
+## Load balancing
+
+Load balancing is a technique used to distribute the load across multiple servers. It is used to improve the performance and reliability of the application. 
+
+Let's create simple load balancer. To do so:
+
+1. create two express apps. You can use the following code:
+
+
+First app located in `server1/index.js`:
+
+
+```js
+import express from 'express'
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => res.send('Hello World!, from server number 1'))
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+```
+
+Second app located in `server2/index.js`  
+
+```js
+import express from 'express'
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => res.send('Hello World!, from server number 2'))
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+```
+
+2. Dockerize the two applications:
+
+Navigate to `server1/index.js` and create the following `Dockerfile`:
+
+```dockerfile
+FROM node:18-alpine
+# Create app directory
+WORKDIR /usr/src/app
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
+RUN npm install
+# If you are building your code for production
+# RUN npm ci --omit=dev
+# Bundle app source
+COPY . .
+EXPOSE 3000
+CMD ["npm",  "run", "dev"]
+```
+
+then run the following command:
+
+```bash
+$ docker build -t server1 .
+```
+
+Navigate to `server2/index.js` and create the same `Dockerfile`, then run:
+
+```bash
+$ docker build -t server2 .
+```
+
+Run the two containers:
+
+```bash
+$ docker run -p 1111:3000 server1
+$ docker run -p 1111:3000 server2
+```
+
+1. Put the following content in nginx configuration file:
+
+```nginx
+events {  }
+
+http {
+    upstream backendserver {
+        server 127.0.0.1:1111;
+        server 127.0.0.1:2222;
+    }
+
+    server {
+        listen 8080;
+        server_name localhost;
+        location / {
+            proxy_pass http://backendserver/;
+        }
+    }
+}
+```
+
+4. Run the following command to start nginx:
+
+```bash
+$ nginx
+```
+
+5. Navigate to `http://localhost:8080` and you should see the following page:
+
+![nginx](nginx-load-balancer.png)
+
+try to refresh the page multiple times (press `F5`) and you will see that the content changes every time, this means that the requests are distributed between the two servers.
+
+![nginx](nginx-load-balancer-2.png)
+
+> Note: This load balancing algorithms is called round robin. It is the default algorithm used by nginx. You can read more about it [here](https://www.nginx.com/resources/glossary/round-robin-load-balancing/).
+
+
+
+
+
