@@ -735,3 +735,107 @@ FROM EMPLOYEE
 GROUP BY DEPARTMENT_ID
 HAVING AVERAGE_SALARY > 50000
 ```
+
+## Subqueries
+
+A subquery is a query that is nested inside a SELECT, INSERT, UPDATE, or DELETE statement, or inside another subquery. A subquery can be used anywhere an expression can be used.
+
+For example, suppose that you want to generate a list of vendors who do not provide products.
+
+Using join:
+
+```sql
+SELECT V_CODE, V_NAME
+FROM PRODUCT RIGHT JOIN VENDOR 
+ON PRODUCT.V_CODE = VENDOR.V_CODE
+WHERE P_CODE IS NULL
+```
+
+Using subquery:
+
+```sql
+SELECT V_CODE, V_NAME
+FROM VENDOR
+WHERE V_CODE NOT IN (SELECT V_CODE FROM PRODUCT WHERE V_CODE IS NOT NULL)
+```
+
+Another example, if you want to get all the products with price above the average price:
+
+```sql
+SELECT P_CODE, P_PRICE
+FROM PRODUCT
+WHERE P_PRICE >= (SELECT AVG(P_PRICE) FROM PRODUCT)
+```
+
+You should remember the following key characteristics for subqueries:
+
+- A subquery is a query (SELECT statement) inside another query.
+- A subquery is normally expressed inside parentheses.
+- The first query in the SQL statement is known as the outer query.
+- The query inside the SQL statement is known as the inner query.
+- The inner query is executed first.
+- The output of an inner query is used as the input for the outer query.
+- The entire SQL statement is sometimes referred to as a nested query.
+
+A subquery can return one or more values, either one single value (one column and one row), a list of values (one column and multiple rows) or a virtual table (multicolumn, multirow set of values)
+
+
+### `WHERE` Subqueries
+
+The most common type of subquery is the `WHERE` on the right side of a comparison operator.
+
+For example, to find the employees who have a salary greater than the average salary:
+
+```sql
+SELECT EMPLOYEE_ID, FIRST_NAME, LAST_NAME, SALARY
+FROM EMPLOYEE
+WHERE SALARY > (SELECT AVG(SALARY) FROM EMPLOYEE)
+```
+
+Note that the output of the subquery must be a single value.
+
+### `IN` Subqueries
+
+The `IN` operator is used to determine if a value matches any value in a list or subquery. The `IN` operator is used to compare a value to a list of literal values or a subquery.
+
+For example, to find the employees who work in the department with id 1, 2 or 3:
+
+```sql
+SELECT EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID
+FROM EMPLOYEE
+WHERE DEPARTMENT_ID IN (SELECT DEPARTMENT_ID FROM DEPARTMENT WHERE DEPARTMENT_NAME IN ('Sales', 'Marketing', 'Finance'))
+```
+
+### `HAVING` Subqueries
+
+The `HAVING` clause is used to filter the groups formed in the `GROUP BY` clause based on provided criteria. The `HAVING` clause operates like the `WHERE` clause in the `SELECT` statement. However, the `WHERE` clause applies to columns and expressions for individual rows, whereas the `HAVING` clause is applied to the output of a `GROUP BY` operation.
+
+For example, to list all products with a total quantity sold greater than the average quantity sold, you would write the following query:
+
+```sql
+SELECT PRODUCT_ID, SUM(QUANTITY) AS TOTAL_QUANTITY
+FROM ORDER_LINE
+GROUP BY PRODUCT_ID
+HAVING SUM(QUANTITY) > (SELECT AVG(QUANTITY) FROM ORDER_LINE)
+```
+
+### Multirow Subquery Operators: `ALL` and `ANY`
+
+The `ALL` and `ANY` operators are used to compare a value to a list of values returned by a subquery. The `ALL` operator returns true if the comparison is true for all values in the list. The `ANY` operator returns true if the comparison is true for any value in the list.
+
+For example, suppose you want to know which products cost more than all individual products provided by vendors from Florida:
+
+```sql
+SELECT P_CODE, P_QOH * P_PRICE AS TOTALVALUE
+FROM PRODUCT
+WHERE P_QOH * P_PRICE > ALL (SELECT P_QOH * P_PRICE
+                             FROM PRODUCT
+                             WHERE V_CODE IN (SELECT V_CODE 
+                                              FROM VENDOR WHERE 
+                                              V_STATE 5 'FL'))
+```
+
+For a row to appear in the result set, it must meet the criterion `P_QOH * P_PRICE` . `ALL` of the individual values returned by the subquery `SELECT P_CODE, P_QOH * P_PRICE AS TOTALVALUE ...` In fact, “greater than `ALL`” is equivalent to “greater than the highest product cost of the list.” In the same way, a condition of “less than `ALL`” is equivalent to “less than the lowest product cost of the list.” 
+
+
+Another powerful operator is the `ANY` multirow operator, which you can consider the cousin of the `ALL` multirow operator. The `ANY` operator allows you to compare a single value to a list of values and select only the rows for which the inventory cost is greater than or less than any value in the list. You could also use the equal to `ANY` operator, which would be the equivalent of the `IN` operator.
