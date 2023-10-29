@@ -176,7 +176,7 @@ FROM table_list
 ORDER BY attribute_list(column_list) ASC | DESC
 ```
 
-Note you have the iptoin to sort the output in ascending or descending order. The *default* is *ascending* order.
+Note you have the option to sort the output in ascending or descending order. The *default* is *ascending* order.
 
 For example:
 
@@ -779,7 +779,6 @@ You should remember the following key characteristics for subqueries:
 
 A subquery can return one or more values, either one single value (one column and one row), a list of values (one column and multiple rows) or a virtual table (multicolumn, multirow set of values)
 
-
 ### `WHERE` Subqueries
 
 The most common type of subquery is the `WHERE` on the right side of a comparison operator.
@@ -835,7 +834,78 @@ WHERE P_QOH * P_PRICE > ALL (SELECT P_QOH * P_PRICE
                                               V_STATE 5 'FL'))
 ```
 
-For a row to appear in the result set, it must meet the criterion `P_QOH * P_PRICE` . `ALL` of the individual values returned by the subquery `SELECT P_CODE, P_QOH * P_PRICE AS TOTALVALUE ...` In fact, “greater than `ALL`” is equivalent to “greater than the highest product cost of the list.” In the same way, a condition of “less than `ALL`” is equivalent to “less than the lowest product cost of the list.” 
-
+For a row to appear in the result set, it must meet the criterion `P_QOH * P_PRICE` . `ALL` of the individual values returned by the subquery `SELECT P_CODE, P_QOH * P_PRICE AS TOTALVALUE ...` In fact, “greater than `ALL`” is equivalent to “greater than the highest product cost of the list.” In the same way, a condition of “less than `ALL`” is equivalent to “less than the lowest product cost of the list.”
 
 Another powerful operator is the `ANY` multirow operator, which you can consider the cousin of the `ALL` multirow operator. The `ANY` operator allows you to compare a single value to a list of values and select only the rows for which the inventory cost is greater than or less than any value in the list. You could also use the equal to `ANY` operator, which would be the equivalent of the `IN` operator.
+
+## Relational Set Operators
+
+Relational set operators are used to implement the union, intersection, and difference operations on the results of two or more SELECT statements.
+
+### `UNION` Operator
+
+The `UNION` operator is used to combine the results of two or more `SELECT` statements into a single result set. The `UNION` operator removes duplicate rows unless the `UNION ALL` operator is used.
+
+Syntax:
+
+```sql
+query1 UNION [ALL] query2
+```
+
+For example, if amazon bought a new company and you want to list all the products from both companies:
+
+```sql
+SELECT P_CODE, P_DESCRIPT, P_INDATE, P_QOH, P_MIN, P_PRICE, P_DISCOUNT, V_CODE
+FROM AMAZON_PRODUCTS
+UNION
+SELECT P_CODE, P_DESCRIPT, P_INDATE, P_QOH, P_MIN, P_PRICE, P_DISCOUNT, V_CODE
+FROM NEWCOMPANY_PRODUCTS
+```
+
+Note that the `UNION` operator can be used more than two `SELECT` statements.
+
+### `INTERSECT` Operator
+
+The `INTERSECT` operator is used to combine the results of two or more `SELECT` statements into a single result set. The `INTERSECT` operator returns only the rows that appear in both result sets.
+
+Syntax:
+
+```sql
+query1 INTERSECT query2
+```
+
+For example, if you want to find out the products that are provided by both amazon and new company:
+
+```sql
+SELECT P_CODE, P_DESCRIPT, P_INDATE, P_QOH, P_MIN, P_PRICE, P_DISCOUNT, V_CODE
+FROM AMAZON_PRODUCTS
+INTERSECT
+SELECT P_CODE, P_DESCRIPT, P_INDATE, P_QOH, P_MIN, P_PRICE, P_DISCOUNT, V_CODE
+FROM NEWCOMPANY_PRODUCTS
+```
+
+### `EXCEPT(MINUS)` Operator
+
+The `EXCEPT` operator is used to combine the results of two `SELECT` statements into a single result set. The `EXCEPT` operator returns only the rows that appear in the first result set but not in the second result set.
+
+Syntax:
+
+```sql
+query1 EXCEPT query2
+```
+
+For example, if you want to find out the products that are provided by amazon but not by new company:
+
+```sql
+SELECT P_CODE, P_DESCRIPT, P_INDATE, P_QOH, P_MIN, P_PRICE, P_DISCOUNT, V_CODE
+FROM AMAZON_PRODUCTS
+EXCEPT
+SELECT P_CODE, P_DESCRIPT, P_INDATE, P_QOH, P_MIN, P_PRICE, P_DISCOUNT, V_CODE
+FROM NEWCOMPANY_PRODUCTS
+```
+
+Note that the `EXCEPT` operator is supported by (MS SQL Server). Oracle, `MINUS` operator is supported.
+
+## Crafting `SELECT` Statements
+
+Crafting effective and efficient SQL queries requires a great deal of skill. To successfully craft complex queries, you must understand the data you are working with and understand the problem to be solved. When struggling with the formulation of the query itself, building the query components in the order `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, and `ORDER BY` can be helpful.
