@@ -108,6 +108,10 @@ The most common query processing bottlenecks are:
 - Network
 - Application code
 
+# Indexes and Query Optimization
+
+An index scan is more efficient than a full table scan because the index data is preordered and the amount of data is usually much smaller. Therefore, when performing searches, it is almost always better for the DBMS to use the index to access a table than to scan all rows in a table sequentially.
+
 # SQL Performance Tuning
 
 SQL performance tuning is evaluated from the client perspective. Therefore, the goal is to illustrate some common practices used to write efficient SQL code.
@@ -147,3 +151,26 @@ The following common practices are used to write efficient conditional expressio
 - If you use multiple `AND` conditions, write the most likely to be false condition first.
 - If you use multiple `OR` conditions, write the most likely to be true condition first.
 - Whenever possible try to avoid using `NOT` conditions. (e.g. `NOT (PRICE > 100)` is slower than `PRICE <= 100`)
+
+# DBMS Performance Tuning
+
+DBMS performance tuning at the server end focuses on setting the parameters used for:
+
+- Data cache
+- SQL cache
+- Sort cache
+- Optimizer mode
+  - Rule based
+  - Cost based
+
+**In memory database**: A database that is stored in the computer’s main memory instead of on a hard disk. (e.g. Redis)
+
+Note the following general recommendations for physical storage of databases:
+
+- Use I/O accelerators to improve the performance of I/O operations. (use SSD instead of HDD)
+- Use RAID (Redundant Array of Independent Disks) to improve the performance of I/O operations. RAID is a technology that uses multiple hard disks to improve the performance and fault tolerance of a computer system and a balance between them
+- Minimize disk contention by spreading the data files across multiple disks.
+- Partition tables based on usage
+- Use denormalization to reduce the number of joins.
+- Store computed and aggregated data in tables
+- Put high-usage tables in their own table spaces so the database minimizes conflict with other tables.
