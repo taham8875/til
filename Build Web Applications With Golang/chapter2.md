@@ -624,3 +624,336 @@ func SumDiffProduct(num1, num2 int) (sum int, diff int, product int) {
     return
 }
 ```
+
+## Variadic functions
+
+Variadic functions can be called with any number of trailing arguments, in the body of the function, the variadic parameter becomes actually a slice.
+
+```go
+func myFunc(arg ...int) {}
+```
+
+For example, a function that sums an arbitrary number of integers:
+
+```go
+func sum(nums ...int) int {
+    total := 0
+    for _, num := range nums {
+        total += num
+    }
+    return total
+}
+```
+
+Yo use a variadic function, you can pass zero or more arguments to the function:
+
+```go
+sum(1, 2)
+sum(1, 2, 3)
+sum(1, 2, 3, 4)
+```
+
+## Pass by value and pointers
+
+When we pass an argument to the function that was called, that function actually gets the copy of our variables so any change will not affect to the original variable.
+
+For example, let consider this `increment` function:
+
+```go
+// this will not work
+func increment(x int) {
+    x++
+}
+```
+
+The solution is to pass a pointer to the variable we want to change (a memory address):
+
+```go
+func increment(x *int) {
+    *x++
+}
+```
+
+When you call this function, you need to pass the address of the variable you want to change:
+
+```go
+x := 1
+increment(&x)
+fmt.Printf("x is equal to %d\n", x)
+```
+
+## Defer
+
+`defer` is used to ensure that a function call is performed later in a program's execution, usually for purposes of cleanup. `defer` is often used where e.g. `ensure` and `finally` would be used in other languages. `defer` helps you to write a cleaner code where related things are close to each other.
+
+```go
+func ReadWrite() bool {
+    file.Open("file")
+    defer file.Close() // this will be executed at the end of the enclosing function
+    if failureX {
+        return false
+    }
+    if failureY {
+        return false
+    }
+    return true
+}
+```
+
+If there are multiple `defer` statements, they are pushed onto a stack and executed in last-in-first-out order (reverse order).
+
+```go
+for i := 0; i < 5; i++ {
+    defer fmt.Printf("%d ", i)
+}
+```
+
+output:
+
+```
+4 3 2 1 0
+```
+
+## Functions as values and types
+
+Functions are values too. They can be passed around just like other values. One use case is to pass a function to another function as an argument.
+
+```go
+type testInt func(int) bool // define a function type of variable
+
+func isOdd(integer int) bool {
+    if integer % 2 == 0 {
+        return false
+    }
+    return true
+}
+
+func isEven(integer int) bool {
+    if integer % 2 == 0 {
+        return true
+    }
+    return false
+}
+
+func filter(slice []int, f testInt) []int {
+    var result []int
+    for _, value := range slice {
+        if f(value) {
+            result = append(result, value)
+        }
+    }
+    return result
+}
+
+func main() {
+    slice := []int {1, 2, 3, 4, 5, 7}
+    fmt.Println("slice = ", slice)
+    odd := filter(slice, isOdd) // function as values
+    fmt.Println("Odd elements of slice are: ", odd)
+    even := filter(slice, isEven)
+    fmt.Println("Even elements of slice are: ", even)
+}
+```
+
+## panic and recover
+
+`panic` is a built-in function that stops the ordinary flow of control and begins panicking. When the function `F` calls `panic`, execution of `F` stops, any deferred functions in `F` are executed normally, and then `F` returns to its caller. To the caller, `F` then behaves like a call to `panic`. The process continues up the stack until all functions in the current goroutine have returned, at which point the program crashes. Panics can be initiated by invoking `panic` directly. They can also be caused by runtime errors, such as out-of-bounds array accesses.
+
+```go
+var user = os.Getenv("USER")
+
+func init() {
+    if user == "" {
+        panic("no value for $USER")
+    }
+}
+```
+
+`recover` is a built-in function that regains control of a panicking goroutine. `recover` is only useful inside deferred functions. During normal execution, a call to `recover` will return `nil` and have no other effect. If the current goroutine is panicking, a call to `recover` will capture the value given to `panic` and resume normal execution.
+
+```go
+func main() {
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("Recovered in f", r)
+        }
+    }()
+    panic("panic")
+}
+```
+
+## `main` and `init`
+
+Go has two retentions which are called `main` and `init`, `main` can only be used in the `main` package and `init` can be used in any package.
+
+Even if you can write many `init` function, it is strongly recommended to have only one `init` function per package.
+
+Go will execute `main` and `init` function automatically, you do not need to call them explicitly.
+
+Programs initialize and begin execution from the `main` package. If the `main` package imports other packages, they will be imported in the compile time. If one package is imported many times, it will be only compiled once. After importing packages, programs will initialize the constants and variables within the imported packages, then execute the `init` function if it exists, and so on. After all the other packages are initialized, programs will initialize constants and variables in the `main` package, then execute the `init` function inside the package if it exists. The following figure shows the process.
+
+![Alt text](assets/chapter2/image.png)
+
+## import
+
+We use the `import` keyword to import packages. The `import` keyword must be placed before any other code.
+
+```go
+import "fmt"
+import "os"
+
+// or 
+
+import (
+    "fmt"
+    "os"
+)
+```
+
+Go supports third party packages in two ways:
+
+- Using relative paths (e.g. `import "./package"`), this will look up the package in the current directory. (not recommended)
+- Using absolute paths (e.g. `import "shorturl/package"`), this will look up the package in the directories specified by the `GOROOT` and `GOPATH` environment variables.
+
+There are some special operators in Go that are used to import packages:
+
+- Dot (`.`) operator, it is used to import packages for accessing their exported identifiers without having to qualify them with their package names. For example, `fmt.Println` can be written as `Println` after importing the `fmt` package using the dot operator.
+
+```go
+import . "fmt"
+
+// ... code
+
+Println("Hello, World!")
+```
+
+- Alias (`_`), it is used to rename a package when importing it. For example, if we want to import the `fmt` package as `format`, we can do it using the alias operator as follows:
+
+```go
+import format "fmt"
+
+// ... code
+
+format.Println("Hello, World!")
+```
+
+- Blank identifier (`_`), it is used to import packages only for their side-effects (its `init` function). For example, if we import the `os` package using the blank identifier, the package will be imported only for its side-effect, which is the initialization of the package, and the package itself will not be available for use.
+
+```go
+import (
+"database/sql"
+_ "github.com/ziutek/mymysql/godrv"
+)
+```
+
+# Structs
+
+## struct
+
+A struct is a type which contains named fields. It is similar to a class in OOP. It is useful to collect data together to form records.
+
+```go
+type structName struct {
+    field1 type1
+    field2 type2
+    ...
+}
+```
+
+For example, a struct that represents a person:
+
+```go
+type Person struct {
+    name string
+    age int
+}
+```
+
+There are two fields in the `Person` struct:
+
+- `name` of type `string`, used to store the name of the person
+- `age` of type `int`, used to store the age of the person
+
+To use a struct, we need to create an instance of it, then we can access the fields using the `.` operator:
+
+```go
+var p Person
+p.name = "John"
+p.age = 21
+fmt.Printf("The name of the person is %s\n", p.name)
+fmt.Printf("The age of the person is %d\n", p.age)
+```
+
+There are three ways to create a struct:
+
+```go
+// 1. create a struct and assign values to fields (order not important)
+p := Person{age: 21, name: "John"}
+
+// 2. create a struct and assign values to fields in order
+p := Person{"John", 21}
+
+// 3. Define an anonymous struct and assign values to fields
+p := struct {
+    name string
+    age int
+} {
+    name: "John",
+    age: 21,
+}
+```
+
+## embedded fields in structs
+
+Go supports embedded fields in structs. This is similar to inheritance in OOP.
+
+```go
+type Person struct {
+    name string
+    age int
+}
+
+type Student struct {
+    Person // embedded field
+    school string
+}
+
+func main() {
+    s := Student{Person{"John", 21}, "MIT"}
+    fmt.Println("His name is ", s.name)
+    fmt.Println("His age is ", s.age)
+    fmt.Println("He studies at ", s.school)
+}
+```
+
+Overloading is supported in Go, so if the embedded struct has a field with the same name as another field in the outer struct, we need to use the outer struct's name to access it.
+
+```go
+package main
+
+import "fmt"
+
+type Human struct {
+    name  string
+    age   int
+    phone string // Human has phone field
+}
+type Employee struct {
+    Human
+    specialty string
+    phone     string // phone in employee
+}
+
+func main() {
+    Bob := Employee{Human{"Bob", 34, "777-444-XXXX"}, "Designer", "333-222"}
+    fmt.Println("Bob's work phone is:", Bob.phone)
+    fmt.Println("Bob's personal phone is:", Bob.Human.phone)
+}
+```
+
+output:
+
+```
+Bob's work phone is: 333-222
+Bob's personal phone is: 777-444-XXXX
+```
