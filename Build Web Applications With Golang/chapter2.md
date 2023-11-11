@@ -957,3 +957,399 @@ output:
 Bob's work phone is: 333-222
 Bob's personal phone is: 777-444-XXXX
 ```
+
+# Object Oriented
+
+## methods
+
+Suppose you have a rectangle struct:
+
+```go
+type Rectangle struct {
+    width, height float64
+}
+```
+
+and you want to add a method to it to calculate its area:
+
+```go
+func (r Rectangle) area() float64 {
+    return r.width * r.height
+}
+```
+
+Note that after the `func` keyword we need to specify the receiver of the method, in this case, the receiver is `r` of type `Rectangle`. The receiver is like the `this` pointer in other languages, it refers to the current object and its fields are accessible inside the method.
+
+As Rob Pike said:
+> A method is a function with an implicit first argument, called a receiver.
+
+Let's use this method:
+
+```go
+r := Rectangle{width: 10, height: 5}
+fmt.Println("Area of rectangle is: ", r.area())
+```
+
+One thing is worth noting that the receiver is passed by value, not by reference. This means that any changes to the receiver inside the method will not be visible to the caller.
+
+```go
+// this will not work
+func (r Rectangle) setWidth(width float64) {
+    r.width = width
+}
+```
+
+To make it work, we need to use a pointer to the struct:
+
+```go
+func (r *Rectangle) setWidth(width float64) {
+    r.width = width
+}
+```
+
+You might be asking why not using `(*r).width = width` instead of `r.width = width`, the answer is that Go is smart enough to handles conversion between values and pointers for method calls.
+
+To use this method:
+
+```go
+r := Rectangle{width: 10, height: 5}
+r.setWidth(15)
+fmt.Println("Width:", r.width)
+```
+
+You might be asking should we use `&r.setWidth(15)` instead of `r.setWidth(15)`, the answer is no, either is okay an go is smart enough to interpret it correctly.
+
+## method inheritance
+
+Go does not support inheritance, but it does support composition. We can embed a type in another type to create a new type. Once we do that, the new type will have all the methods of the embedded type.
+
+```go
+type Person struct {
+    name string
+    age int
+}
+
+func (p Person) eat() {
+    fmt.Printf("%s is eating\n", p.name)
+}
+
+type Employee struct {
+    Person
+    salary int
+}
+
+func main() {
+    e := Employee{Person{"John", 21}, 1000}
+    e.eat()
+}
+```
+
+## method overriding
+
+If you want the employee to have his own `eat` method, you can define it in the employee struct:
+
+```go
+type Person struct {
+    name string
+    age int
+}
+
+func (p Person) eat() {
+    fmt.Printf("%s is eating\n", p.name)
+}
+
+type Employee struct {
+    Person
+    salary int
+}
+
+func (e Employee) eat() {
+    fmt.Printf("Employee %s is eating, this is overridden method\n", e.name)
+}
+
+func main() {
+    e := Employee{Person{"John", 21}, 1000}
+    e.eat()
+}
+```
+
+# Interfaces
+
+## interface
+
+What is an interface? An interface is a collection of method signatures that a type can implement. It is a set of actions that you can perform on any value of a type that implements the interface.
+
+Type of interface: an interface defines a set of methods, so any type that implements all the methods is implicitly implementing the interface.
+
+```go
+type interfaceName interface {
+    methodName1(param_list) return_type
+    methodName2(param_list) return_type
+    methodName3(param_list) return_type
+    ...
+}
+```
+
+For example, a `Shape` interface:
+
+```go
+type Shape interface {
+    area() float64
+    perimeter() float64
+}
+```
+
+To implement an interface, we just need to implement all the methods in the interface.
+
+```go
+type Rectangle struct {
+    width, height float64
+}
+
+type Circle struct {
+    radius float64
+}
+
+func (r Rectangle) area() float64 {
+    return r.width * r.height
+}
+
+func (c Circle) area() float64 {
+    return math.Pi * c.radius * c.radius
+}
+
+func (r Rectangle) perimeter() float64 {
+    return 2 * (r.width + r.height)
+}
+
+func (c Circle) perimeter() float64 {
+    return 2 * math.Pi * c.radius
+}
+```
+
+So what kind of values can be put in the interface? If we define a variable as a type interface, any type that implements the interface can assigned to this variable.
+
+For example, let's define the variable `s` as type `Shape` and assign a `Rectangle` and a `Circle` to it, we can do that because both `Rectangle` and `Circle` implement the `Shape` interface.
+
+```go
+func main() {
+    r := Rectangle{width: 10, height: 5}
+    c := Circle{radius: 5}
+    var s Shape
+    s = r
+    fmt.Printf("Shape: %#v\n", s)
+    fmt.Println("Rectangle area:", s.area())
+    fmt.Println("Rectangle perimeter:", s.perimeter())
+    s = c
+    fmt.Printf("Shape: %#v\n", s)
+    fmt.Println("Circle area:", s.area())
+    fmt.Println("Circle perimeter:", s.perimeter())
+}
+```
+
+## Empty interface
+
+An empty interface is an interface that has zero methods. It is represented as `interface{}`. Since the empty interface has zero methods, all types implement the empty interface. This is useful when we want a variable that can hold the values of any type (similar to `any` in typescript).
+
+```go
+var emptyInterface interface{}
+
+emptyInterface = 1
+fmt.Printf("%v\n", emptyInterface)
+emptyInterface = "string"
+fmt.Printf("%v\n", emptyInterface)
+emptyInterface = true
+fmt.Printf("%v\n", emptyInterface)
+```
+
+## Method arguments of an interface
+
+We use `fmt.Println` a lot, but have you ever noticed that it can accept any type of argument? Looking at the open source code of fmt , we see the following definition.
+
+```go
+type Stringer interface {
+    String() string
+}
+```
+
+This means that any type that implements the `String()` method will implicitly implement the `Stringer` interface. The `fmt.Println` function will call the `String()` method of the argument if it implements the `Stringer` interface.
+
+```go
+type Person struct {
+    name string
+    age int
+}
+
+func (p Person) String() string {
+    return fmt.Sprintf("%v (%v years)", p.name, p.age)
+}
+
+func main() {
+    a := Person{"Arthur Dent", 42}
+    z := Person{"Zaphod Beeblebrox", 9001}
+    fmt.Println(a, z)
+}
+```
+
+Attention: If the type implemented the interface `error` , fmt will call `Error()` , so you don't have to implement Stringer at this point.
+
+## Type of variable in an interface
+
+If you want to know the type of a variable in an interface, you can use the `.(type)` syntax. (Assertion of Comma, ok pattern) `value, ok := element.(T)` , if the assertion is successful, `ok` is true, otherwise `ok` is false.
+
+```go
+package main
+
+import "fmt"
+
+type Element interface{}
+type List []Element
+
+type Person struct {
+    name string
+    age  int
+}
+
+func (p Person) String() string {
+    return "(name: " + p.name + " - age: " + fmt.Sprintf("%d", p.age) + " years)"
+}
+
+func main() {
+    list := make(List, 3)
+    list[0] = 1       // an int
+    list[1] = "Hello" // a string
+    list[2] = Person{"Dennis", 70}
+
+    for index, element := range list {
+        if value, ok := element.(int); ok {
+            fmt.Printf("list[%d] is an int and its value is %d\n", index, value)
+        } else if value, ok := element.(string); ok {
+            fmt.Printf("list[%d] is a string and its value is %s\n", index, value)
+        } else if value, ok := element.(Person); ok {
+            fmt.Printf("list[%d] is a Person and its value is %s\n", index, value)
+        } else {
+            fmt.Printf("list[%d] is of a different type\n", index)
+        }
+    }
+}
+```
+
+If there are many types to test, it may be better to use `switch`:
+
+```go
+for index, element := range list {
+    switch value := element.(type) {
+    case int:
+        fmt.Printf("list[%d] is an int and its value is %d\n", index, value)
+    case string:
+        fmt.Printf("list[%d] is a string and its value is %s\n", index, value)
+    case Person:
+        fmt.Printf("list[%d] is a Person and its value is %s\n", index, value)
+    default:
+        fmt.Printf("list[%d] is of a different type\n", index)
+    }
+}
+```
+
+One thing you should remember is that `element.(type)` cannot be used outside of the `switch` body
+
+## Embedded interfaces
+
+An interface can be embedded in another interface to create a new interface. This is similar to inheritance in OOP.
+
+For example, in `container/heaps`, there is a `Interface` interface:
+
+```go
+type Interface interface {
+    sort.Interface // embedded sort.Interface
+    Push(x interface{}) // a Push method to push elements into the heap
+    Pop() interface{} // a Pop method that pops elements from the heap
+}
+```
+
+We can see that the `Interface` interface embeds the `sort.Interface` interface and adds two methods to it. That means three other methods of the `sort.Interface` interface are also included in the `Interface` interface.
+
+```go
+interface Interface {
+    Len() int
+    Less(i, j int) bool
+    Swap(i, j int)
+}
+```
+
+Another example is the `io` package, which defines the `ReadWriter` interface as follows:
+
+```go
+type ReadWriter interface {
+    Reader
+    Writer
+}
+```
+
+## Reflection
+
+Reflection is the ability of a program to inspect its variables and values at run time and find their type.
+
+```go
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    var x float64 = 3.4
+    fmt.Println("type:", reflect.TypeOf(x))
+    fmt.Println("value:", reflect.ValueOf(x))
+    v := reflect.ValueOf(x)
+    fmt.Println("kind is float64:", v.Kind() == reflect.Float64)
+}
+```
+
+output:
+
+```
+type: float64
+value: 3.4
+```
+
+Finally, if we want to change the values of the reflected types, we need to make it modifiable. As discussed earlier, there is a difference between pass by value and pass by reference. The following code will not compile.
+
+```go
+// This will not compile
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    var x float64 = 3.4
+    v := reflect.ValueOf(x)
+    v.SetFloat(7.1)
+    fmt.Println("value:", v)
+}
+```
+
+In order to modify the value, we need to use `Elem()` to get the address of the value.
+
+```go
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    var x float64 = 3.4
+    p := reflect.ValueOf(&x)
+    v := p.Elem()
+    v.SetFloat(7.1)
+    fmt.Println("value:", v)
+}
+```
+
+For more on reflection, see the [reflect](https://go.dev/blog/laws-of-reflection) blog post.
