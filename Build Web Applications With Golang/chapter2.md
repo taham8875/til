@@ -1353,3 +1353,233 @@ func main() {
 ```
 
 For more on reflection, see the [reflect](https://go.dev/blog/laws-of-reflection) blog post.
+
+# Concurrency
+
+## Goroutines
+
+A goroutine is a lightweight thread managed by the Go runtime. It is similar to a thread, but it is not the same. A goroutine is not an operating system thread, it is a function that is scheduled to run independently of the other code.
+
+To create a new gorooutine, we use the `go` keyword followed by a function invocation:
+
+```go
+go f(x, y, z)
+```
+
+For example:
+
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func say(s string) {
+    for i := 0; i < 5; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
+}
+
+func main() {
+    go say("world")
+    say("hello")
+}
+```
+
+## Channels
+
+Channels are a typed conduit through which you can send and receive values with the channel operator, `<-`.
+
+To create a channel:
+
+```go
+ch := make(chan int)
+```
+
+Channels use `<-` operator to send and receive values.
+
+```go
+ch <- v // send v to channel ch
+v := <-ch // receive from ch, and assign value to v
+```
+
+For example:
+
+```go
+package main
+
+import "fmt"
+
+func sum(s []int, c chan int) {
+    sum := 0
+    for _, v := range s {
+        sum += v
+    }
+    c <- sum // send sum to c
+}
+
+func main() {
+    s := []int{7, 2, 8, -9, 4, 0}
+
+    c := make(chan int)
+    go sum(s[:len(s)/2], c)
+    go sum(s[len(s)/2:], c)
+    x, y := <-c, <-c // receive from c
+
+    fmt.Println(x, y, x+y)
+}
+```
+
+Sending and receiving data in channels blocks by default, so when we send data to a channel, the control is blocked in the send statement until some other goroutine receives from the channel, and when we receive data from a channel, the receive is blocked until some goroutine sends data to the channel.
+
+## Buffered channels
+
+Channels can be buffered. Provide the buffer length as the second argument to `make` to initialize a buffered channel:
+
+```go
+ch := make(chan int, 100)
+```
+
+Sends to a buffered channel will panic if the buffer is full. Receives will panic when the buffer is empty.
+
+For example:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    ch := make(chan int, 2) // try to change it to 1 and 3 and see what happens
+    ch <- 1
+    ch <- 2
+    fmt.Println(<-ch)
+    fmt.Println(<-ch)
+}
+```
+
+## range and close
+
+Like slices, maps and channels, we can use `range` to iterate over values received from a channel.
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func fibonacci(n int, c chan int) {
+	x, y := 1, 1
+	for i := 0; i < n; i++ {
+		c <- x
+		x, y = y, x+y
+	}
+	close(c)
+}
+func main() {
+	c := make(chan int, 10)
+	go fibonacci(cap(c), c)
+	for i := range c {
+		fmt.Println(i)
+	}
+}
+```
+
+In this code, we use `for i := range c` to receive values from the channel until it is closed. The `close` function is used to close the channel. Only the sender should close a channel, never the receiver. Sending on a closed channel will cause a panic.
+
+If we do not close the channel, the `range` will not stop receiving values from the channel and will cause a deadlock.
+
+## Select
+
+The `select` statement lets a goroutine wait on multiple communication operations. With no `select` case and a default case, the `select` statement blocks (stop and wait) until at least one of the communications can proceed.
+
+```go
+select {
+    case communication clause 1:
+        statement(s)
+    case communication clause 2:
+        statement(s)
+    ...
+    default:
+        statement(s)
+}
+```
+
+For example:
+
+```go
+package main
+
+import "fmt"
+
+
+func fibonacci(c, quit chan int) {
+    x, y := 1, 1
+    for {
+        select {
+        case c <- x:
+            x, y = y, x+y
+        case <-quit:
+            fmt.Println("quit")
+            return
+        }
+    }
+}
+
+func main() {
+    c := make(chan int)
+    quit := make(chan int)
+    go func() {
+        for i := 0; i < 10; i++ {
+            fmt.Println(<-c)
+        }
+        quit <- 0
+    }()
+    fibonacci(c, quit)
+}
+```
+
+## Timeout
+
+Sometimes we want to prevent our program from blocking forever. We can use a `select` statement with a timeout case to avoid blocking the program forever.
+
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func main() {
+    c := make(chan int)
+    o := make(chan bool)
+    go func() {
+        for {
+            select {
+            case v := <-c:
+                fmt.Println(v)
+            case <-time.After(5 * time.Second):
+                fmt.Println("timeout")
+                o <- true
+                break
+            }
+        }
+    }()
+    <-o
+}
+```
+
+## Runtime goroutines
+
+The `runtime` package contains operations that interact with Go's runtime system, such as functions to control `goroutines`.
+
+- `runtime.Goexit()`: exits the current goroutine, but defered functions will still be executed.
+- `runtime.Gosched()`: lets the scheduler to execute other goroutines, and then return to the current goroutine at some point in the future.
+- `runtime.NumCPU()`: returns the number of CPUs cores.
+- `runtime.NumGoroutine()`: returns the number of goroutines that currently exist.
+- `runtime.GOMAXPROCS()`: sets the maximum number of CPUs cores you want to use.
