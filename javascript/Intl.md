@@ -97,3 +97,14 @@ const formatter = new Intl.NumberFormat("en-US", {
 
 console.log(formatter.format(12.1546843584864)); // 12.15
 ```
+
+In one line:
+
+```js
+new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 2,
+}).format(1234567.89); // $1.2M
+```
