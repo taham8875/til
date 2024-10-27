@@ -112,7 +112,7 @@ public class PerDiemMealExpenses implements MealExpenses {
 
 Most of things that invites errors is returning `null`. If you return `null`, you have to check for it and anytime you don't check for it you have the probability of getting a `NullPointerException`.
 
-```
+```java
 public void registerItem(Item item) {
     if (item != null) {
         ItemRegistry registry = peristentStore.getItemRegistry();
